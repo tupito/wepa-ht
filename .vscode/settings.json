@@ -3,5 +3,5 @@
         "source.fixAll.eslint": true
     },
     // https://itnext.io/the-absolute-easiest-way-to-debug-node-js-with-vscode-2e02ef5b1bad
-    "debug.node.autoAttach": "off"   // node --inspect .\app.js
+    "debug.node.autoAttach": "on"   // node --inspect .\app.js
 }

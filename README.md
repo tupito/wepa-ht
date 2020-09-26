@@ -5,7 +5,8 @@
 # luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090
 docker-compose up -d
 
-# todo: noden käynnistys
+# noden käynnistys
+npm install
 npm run start
 npm run start-dev
 
@@ -21,6 +22,7 @@ git status
 
 # synkkaa remote lokaaliin
 git fetch
+git pull
 
 # vain yhteissessiossa, lokaali remoteen (githubiin)
 git push
