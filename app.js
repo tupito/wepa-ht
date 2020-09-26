@@ -1,7 +1,7 @@
 const { json } = require('express');
 const express = require('express');
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8000;
 
 const app = express();
 
@@ -11,8 +11,8 @@ debugTesteri += 2;
 console.log(debugTesteri);
 
 app.get('/test', (req, res, next) => {
-  console.log('GET /TEST postman');
-  const jsonrest = { name: 'Tomi' };
+  console.log('GET /test wepa-ht');
+  const jsonrest = { message: 'weba-ht' };
   res.send(jsonrest);
 });
 

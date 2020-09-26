@@ -6,7 +6,8 @@
 docker-compose up -d
 
 # todo: noden käynnistys
-...
+npm run start
+npm run start-dev
 
 # todo: testit
 ...
