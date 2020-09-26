@@ -1,0 +1,30 @@
+{
+  "name": "wepa-ht",
+  "version": "1.0.0",
+  "description": "```\r # luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090\r docker-compose up -d",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tupito/wepa-ht.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tupito/wepa-ht/issues"
+  },
+  "homepage": "https://github.com/tupito/wepa-ht#readme",
+  "devDependencies": {
+    "eslint": "^7.9.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mariadb": "^2.4.2",
+    "sequelize": "^6.3.5"
+  }
+}

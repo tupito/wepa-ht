@@ -55,3 +55,19 @@ git reset --hard HEAD
 
 git log --oneline -n5
 ```
+
+# dev - npm packages
+
+```
+npm install nodemon --save-dev
+npm install express
+npm install sequelize
+npm install mariadb
+```
+
+# dev - ESLint
+
+```
+npm install eslint
+.\node_modules\.bin\eslint --init
+```
