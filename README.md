@@ -71,3 +71,9 @@ npm install mariadb
 npm install eslint
 .\node_modules\.bin\eslint --init
 ```
+
+# dev - vscode nodejs debugger
+
+```
+node --inspect .\app.js
+```
