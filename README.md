@@ -5,6 +5,13 @@
 # luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090
 docker-compose up -d
 
+# listaa käynnissä olevat kontit
+docker ps (sama kuin docker container ls)
+
+# sammuta docker containerit
+docker stop wepa-ht_adminer_1
+docker stop wepa-ht_db_1
+
 # noden käynnistys
 npm install
 npm run start
