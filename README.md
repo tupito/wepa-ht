@@ -2,7 +2,7 @@
 
 
 ```
-# luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop)
+# luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090
 docker-compose up -d
 
 # todo: noden käynnistys
