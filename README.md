@@ -65,6 +65,14 @@ git reset --hard HEAD
 
 git log --oneline -n5
 ```
+# Github-prosessi karkeasti
+```
+Uudet ominaisuudet tehdään lokaalisti uuteen branchiin.
+Ennen branchin mergeämistä lokaaliin masteriin,
+ladataan viimeisin versio remote masterista (git fetch; git pull).
+Ratkaistaan mahdolliset konfliktit lokaalisti git merge:n jälkeen.
+Lopuksi uusi commit ja push remote masteriin.
+```
 
 # dev - npm packages
 
