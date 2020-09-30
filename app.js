@@ -31,18 +31,36 @@ const sequelize = new Sequelize('wepa-ht', 'root', 'root', {
 // TAPA 1: sequelize.define
 // If you don't define a primaryKey then sequelize uses id by default.
 const Client = sequelize.define('client', {
-  name: DataTypes.STRING,
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
 });
 
 const ServiceProvider = sequelize.define('service_provider', {
-  name: DataTypes.STRING,
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
 });
 
 const Reservation = sequelize.define('reservation', {
-  start: DataTypes.DATE,
-  end: DataTypes.DATE,
-  client_id: DataTypes.INTEGER,
-  service_id: DataTypes.INTEGER,
+  start: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  end: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  client_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  service_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 /* TAPA 2: Extending Model
