@@ -44,6 +44,7 @@ const ServiceProvider = sequelize.define('service_provider', {
   }
 });
 
+// https://sequelize.org/master/manual/assocs.html#implementation-3
 const Reservation = sequelize.define('reservation', {
   start: {
     type: DataTypes.DATE,
@@ -55,11 +56,17 @@ const Reservation = sequelize.define('reservation', {
   },
   client_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    references: {   // Liitetään client_id-kenttä Client-modelin id-kenttään
+      model: Client,
+      key: 'id'
+    }
   },
   service_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    references: {   // Liitetään service_id-kenttä ServiceProvider-modelin id-kenttään
+      model: ServiceProvider,
+      key: 'id'
+    }
   },
 });
 
@@ -110,6 +117,12 @@ async function synchronizeModels() {
     // .then((result) => console.log(result))
     .then(() => console.log('All models were synchronized successfully.'))
     .catch((err) => console.log('ERROR: ', err));
+  
+  // https://sequelize.org/master/manual/assocs.html#implementation-3
+  // Many-To-Many relationships between Client and Reservations
+  // Many-To-Many relationships between ServiceProvider and Reservations
+  // Client.belongsToMany(Reservation, { through: Reservation });
+  // ServiceProvider.belongsToMany(Reservation, { through: Reservation });
 }
 
 // Push example data to db
