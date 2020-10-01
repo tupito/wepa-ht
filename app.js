@@ -41,7 +41,7 @@ const Client = sequelize.define('client', {
   },
 });
 
-const ServiceProvider = sequelize.define('service_provider', {
+const ServiceProvider = sequelize.define('serviceProvider', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -58,16 +58,16 @@ const Reservation = sequelize.define('reservation', {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  client_id: {
+  clientid: {
     type: DataTypes.INTEGER,
-    references: { // Liitetään client_id-kenttä Client-modelin id-kenttään
+    references: { // Liitetään clientid-kenttä Client-modelin id-kenttään
       model: Client,
       key: 'id',
     },
   },
-  service_id: {
+  serviceproviderid: {
     type: DataTypes.INTEGER,
-    references: { // Liitetään service_id-kenttä ServiceProvider-modelin id-kenttään
+    references: { // Liitetään serviceid-kenttä ServiceProvider-modelin id-kenttään
       model: ServiceProvider,
       key: 'id',
     },
@@ -118,15 +118,16 @@ async function synchronizeModels() {
   console.log('Syncing..');
   // https://sequelize.org/master/manual/model-basics.html#model-synchronization
   await sequelize.sync({ force: true }) // Force droppaa tablet
-    // .then((result) => console.log(result))
+    .then(() => {
+      // Assosisaatiot
+      // https://sequelize.org/master/manual/assocs.html#implementation-3
+      Client.hasMany(Reservation);
+      Reservation.belongsTo(Client);
+      ServiceProvider.hasMany(Reservation);
+      Reservation.belongsTo(ServiceProvider);
+    })
     .then(() => console.log('All models were synchronized successfully.'))
     .catch((err) => console.log('ERROR: ', err));
-
-  // https://sequelize.org/master/manual/assocs.html#implementation-3
-  // Many-To-Many relationships between Client and Reservations
-  // Many-To-Many relationships between ServiceProvider and Reservations
-  // Client.belongsToMany(Reservation, { through: Reservation });
-  // ServiceProvider.belongsToMany(Reservation, { through: Reservation });
 }
 
 // Push example data to db
@@ -146,28 +147,31 @@ async function insertExampleData() {
   const res1 = await Reservation.create({
     start: '2020-09-29 19:00',
     end: '2020-09-29 20:00',
-    client_id: 1,
-    service_id: 1,
+    clientid: 1,
+    serviceproviderid: 1,
   });
 
   const res2 = await Reservation.create({
     start: '2020-09-29 20:00',
     end: '2020-09-29 21:00',
-    client_id: 2,
-    service_id: 1,
+    clientid: 2,
+    serviceproviderid: 1,
   });
 
   const res3 = await Reservation.create({
     start: '2020-09-30 12:00',
     end: '2020-09-30 13:00',
-    client_id: 1,
-    service_id: 1,
+    clientid: 1,
+    serviceproviderid: 1,
   });
 }
 
 async function selectAllReservations() {
   // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
-  const reservations = await Reservation.findAll();
+  // https://sequelize.org/master/manual/eager-loading.html
+  const reservations = await Reservation.findAll({
+    include: [Client, ServiceProvider],
+  });
   console.log(reservations.every((reservation) => reservation instanceof Reservation));
   console.log('All reservations:', JSON.stringify(reservations, null, 2));
 }
