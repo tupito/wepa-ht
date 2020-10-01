@@ -74,6 +74,9 @@ Ratkaistaan mahdolliset konfliktit lokaalisti git merge:n jälkeen.
 Lopuksi uusi commit ja push remote masteriin.
 ```
 
+![Process image](https://raw.githubusercontent.com/tupito/wepa-ht/master/git-process.png)
+
+
 # dev - npm packages
 
 ```
