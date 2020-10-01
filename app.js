@@ -11,8 +11,12 @@ const sequelize = new Sequelize('wepa-ht', 'root', 'root', {
   host: 'localhost',
   port: 3306,
   dialect: 'mariadb',
+  // https://devstudioonline.com/article/sequelize-set-timezone-and-datetime-format-for-mysql
+  timezone: 'Europe/Helsinki', // for writing to database
   dialectOptions: {
-    timezone: 'Etc/GMT+3',
+    useUTC: false, // for reading from database
+    dateStrings: true,
+    typeCast: true,
   },
   define: {
     // https://sequelize.org/master/manual/model-basics.html#enforcing-the-table-name-to-be-equal-to-the-model-name
@@ -34,14 +38,14 @@ const Client = sequelize.define('client', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
-  }
+  },
 });
 
 const ServiceProvider = sequelize.define('service_provider', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
-  }
+  },
 });
 
 // https://sequelize.org/master/manual/assocs.html#implementation-3
@@ -56,17 +60,17 @@ const Reservation = sequelize.define('reservation', {
   },
   client_id: {
     type: DataTypes.INTEGER,
-    references: {   // Liitetään client_id-kenttä Client-modelin id-kenttään
+    references: { // Liitetään client_id-kenttä Client-modelin id-kenttään
       model: Client,
-      key: 'id'
-    }
+      key: 'id',
+    },
   },
   service_id: {
     type: DataTypes.INTEGER,
-    references: {   // Liitetään service_id-kenttä ServiceProvider-modelin id-kenttään
+    references: { // Liitetään service_id-kenttä ServiceProvider-modelin id-kenttään
       model: ServiceProvider,
-      key: 'id'
-    }
+      key: 'id',
+    },
   },
 });
 
@@ -117,7 +121,7 @@ async function synchronizeModels() {
     // .then((result) => console.log(result))
     .then(() => console.log('All models were synchronized successfully.'))
     .catch((err) => console.log('ERROR: ', err));
-  
+
   // https://sequelize.org/master/manual/assocs.html#implementation-3
   // Many-To-Many relationships between Client and Reservations
   // Many-To-Many relationships between ServiceProvider and Reservations
@@ -164,8 +168,8 @@ async function insertExampleData() {
 async function selectAllReservations() {
   // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
   const reservations = await Reservation.findAll();
-  console.log(reservations.every(reservation => reservation instanceof Reservation));
-  console.log("All reservations:", JSON.stringify(reservations, null, 2));
+  console.log(reservations.every((reservation) => reservation instanceof Reservation));
+  console.log('All reservations:', JSON.stringify(reservations, null, 2));
 }
 
 app.get('/test', (req, res, next) => {
