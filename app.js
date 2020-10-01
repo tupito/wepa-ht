@@ -166,16 +166,6 @@ async function insertExampleData() {
   });
 }
 
-async function selectAllReservations() {
-  // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
-  // https://sequelize.org/master/manual/eager-loading.html
-  const reservations = await Reservation.findAll({
-    include: [Client, ServiceProvider],
-  });
-  console.log(reservations.every((reservation) => reservation instanceof Reservation));
-  console.log('All reservations:', JSON.stringify(reservations, null, 2));
-}
-
 app.get('/test', (req, res, next) => {
   console.log('GET /test wepa-ht');
   const jsonrest = { message: 'Test DB + synchronize models' };
@@ -195,10 +185,18 @@ app.get('/init', (req, res, next) => {
 
 app.get('/reservations', (req, res, next) => {
   console.log('GET /reservations wepa-ht');
-  const jsonrest = { message: 'Get reservations' };
-  res.send(jsonrest);
 
-  selectAllReservations();
+  (async () => {
+    // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
+    // https://sequelize.org/master/manual/eager-loading.html
+    const reservations = await Reservation.findAll({
+      include: [Client, ServiceProvider],
+    });
+
+    const result = JSON.stringify(reservations, null, 2);
+    console.log('All reservations:', result);
+    res.send(result);
+  })();
 });
 
 app.listen(PORT);
