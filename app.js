@@ -17,6 +17,7 @@ const sequelize = new Sequelize('wepa-ht', 'root', 'root', {
     useUTC: false, // for reading from database
     dateStrings: true,
     typeCast: true,
+    timezone: 'Europe/Helsinki', // only to disable warning: "please use IANA standard timezone format ('Etc/GMT-3')"
   },
   define: {
     // https://sequelize.org/master/manual/model-basics.html#enforcing-the-table-name-to-be-equal-to-the-model-name
