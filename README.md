@@ -1,10 +1,30 @@
 # Ajo-ohje
 
+```
+1. Asenna Docker, esim. Windows: Docker desktop (https://www.docker.com/products/docker-desktop)
+
+2. luo tietokanta (mariadb + adminer)
+docker-compose up d 
+
+3. asenna sovellus
+npm install
+
+4a. Vaihtoehto #1: aja testit (ensimmäinen testi lisää db:n rakenteen ja lisää mallidatan)
+npm test
+
+4b. Vaihtoehto #2: käynnistä sovellus ja tee api-pyynnöt esim. Postmanilla
+npm run start
+
+Kutsu ensin GET localhost:8000/initdb, muuten teet pyyntöjä tyhjää tietokantaa vasten eikä mikään voi toimia.
+
+Tietokantaa voi tarkastella selainpohjaisen adminerin kautta: localhost:8090
+user: root
+pwd: root
+```
+
+# Ajo-ohje (legacyä)
 
 ```
-# luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090
-docker-compose up -d
-
 # listaa käynnissä olevat kontit
 docker ps (sama kuin docker container ls)
 
