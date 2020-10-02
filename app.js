@@ -115,7 +115,7 @@ async function testDBConnection() {
 }
 
 // Model synchronization to db
-async function synchronizeModels() {
+async function synchronizeDBModels() {
   console.log('Syncing..');
   // https://sequelize.org/master/manual/model-basics.html#model-synchronization
   await sequelize.sync({ force: true }) // Force droppaa tablet
@@ -128,7 +128,7 @@ async function synchronizeModels() {
       Reservation.belongsTo(ServiceProvider);
     })
     .then(() => console.log('All models were synchronized successfully.'))
-    .catch((err) => console.log('ERROR: ', err));
+    .catch((err) => console.log('ERROR from synchronizeDBModels(): ', err));
 }
 
 // Push example data to db
@@ -167,21 +167,21 @@ async function insertExampleData() {
   });
 }
 
-app.get('/test', (req, res, next) => {
-  console.log('GET /test wepa-ht');
-  const jsonrest = { message: 'Test DB + synchronize models' };
-  res.send(jsonrest);
-
-  testDBConnection();
-  synchronizeModels();
-});
-
-app.get('/init', (req, res, next) => {
-  console.log('GET /init wepa-ht');
-  const jsonrest = { message: 'Example data insertion' };
-  res.send(jsonrest);
-
-  insertExampleData();
+// OBS!!!: TODO: Will crash if runned twice in same session
+app.get('/initdb', async (req, res, next) => {
+  console.log('GET /initdb');
+  const jsonResponse = [];
+  try {
+    await testDBConnection();
+    jsonResponse.push({ debugMsg: 'Tested DB' });
+    await synchronizeDBModels(); // !!! await: cannot insert data before db tables exists
+    jsonResponse.push({ debugMsg: 'Synchronized models' });
+    await insertExampleData();
+    jsonResponse.push({ debugMsg: 'Inserted example data to DB' });
+    res.send(jsonResponse);
+  } catch (err) {
+    console.log('ERROR from GET /initdb', err);
+  }
 });
 
 app.get('/reservations', (req, res, next) => {
