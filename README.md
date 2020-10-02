@@ -4,7 +4,7 @@
 1. Asenna Docker, esim. Windows: Docker desktop (https://www.docker.com/products/docker-desktop)
 
 2. luo tietokanta (mariadb + adminer)
-docker-compose up d 
+docker-compose up -d 
 
 3. asenna sovellus
 npm install
