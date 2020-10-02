@@ -169,15 +169,14 @@ async function insertExampleData() {
 
 // OBS!!!: TODO: Will crash if runned twice in same session
 app.get('/initdb', async (req, res, next) => {
-  console.log('GET /initdb');
   const jsonResponse = [];
   try {
     await testDBConnection();
-    jsonResponse.push({ debugMsg: 'Tested DB' });
+    jsonResponse.push({ debugMsg: 'OK - Tested DB' });
     await synchronizeDBModels(); // !!! await: cannot insert data before db tables exists
-    jsonResponse.push({ debugMsg: 'Synchronized models' });
+    jsonResponse.push({ debugMsg: 'OK - Synchronized models' });
     await insertExampleData();
-    jsonResponse.push({ debugMsg: 'Inserted example data to DB' });
+    jsonResponse.push({ debugMsg: 'OK - Inserted example data to DB' });
     res.send(jsonResponse);
   } catch (err) {
     console.log('ERROR from GET /initdb', err);
@@ -201,3 +200,4 @@ app.get('/reservations', (req, res, next) => {
 });
 
 app.listen(PORT);
+module.exports = app; // for mocha

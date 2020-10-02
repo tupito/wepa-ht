@@ -4,7 +4,7 @@
   "description": "```\r # luo mariadb + adminer -Docker container, Docker pitää olla asennettuna (esim. Windows: Docker desktop), adminer-hallinta: localhost:8090\r docker-compose up -d",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "node app.js",
     "start-dev": "nodemon app.js"
   },
@@ -19,9 +19,12 @@
   },
   "homepage": "https://github.com/tupito/wepa-ht#readme",
   "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
+    "mocha": "^8.1.3",
     "nodemon": "^2.0.4"
   },
   "dependencies": {
