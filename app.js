@@ -193,9 +193,8 @@ app.get('/reservations', (req, res, next) => {
       include: [Client, ServiceProvider],
     });
 
-    const result = JSON.stringify(reservations, null, 2);
-    console.log('All reservations:', result);
-    res.send(result);
+    console.log('All reservations:', JSON.stringify(reservations, null, 2));
+    res.json(reservations); // Content-Type: application/json;
   })();
 });
 
