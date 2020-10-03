@@ -1,6 +1,8 @@
 const { json } = require('express');
 const express = require('express');
-const { Sequelize, DataTypes, Model } = require('sequelize');
+const {
+  Sequelize, DataTypes, Model, Op,
+} = require('sequelize');
 
 const PORT = process.env.PORT || 8000;
 
@@ -196,6 +198,75 @@ app.get('/reservations', (req, res, next) => {
     console.log('All reservations:', JSON.stringify(reservations, null, 2));
     res.json(reservations); // Content-Type: application/json;
   })();
+});
+
+app.use(express.json());
+
+app.post('/reservation', async (req, res, next) => {
+  console.log('POST /reservation wepa-ht');
+
+  // https://sequelize.org/master/manual/model-querying-basics.html#applying-where-clauses
+  // Check from the reservations if the client or the serviceprovider are booked
+  const check = await Reservation.findAll({
+    where:
+    {
+      [Op.and]: [
+        {
+          [Op.or]: [
+            { clientid: req.body.clientid },
+            { serviceproviderid: req.body.serviceproviderid },
+          ],
+        },
+        {
+          [Op.or]: [
+            {
+              start: {
+                [Op.between]: [req.body.start, req.body.end],
+              },
+            },
+            {
+              end: {
+                [Op.between]: [req.body.start, req.body.end],
+              },
+            },
+            {
+              [Op.and]: [
+                {
+                  start: {
+                    [Op.lte]: req.body.start,
+                  },
+                  end: {
+                    [Op.gte]: req.body.end,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  // Found any results?
+  if (check.length === 0) {
+    // Nope, proceed with the insert
+    try {
+      const insert = await Reservation.create({
+        start: req.body.start,
+        end: req.body.end,
+        clientid: req.body.clientid,
+        serviceproviderid: req.body.serviceproviderid,
+      });
+
+      res.json({ debugMsg: 'Success!' });
+    } catch (err) {
+      console.log('ERROR from POST /reservation', err);
+      res.json({ debugMsg: 'Error!' });
+    }
+  } else {
+    // Client or serviceprovider are booked
+    res.json({ debugMsg: 'Client or serviceprovider are booked!' });
+  }
 });
 
 app.listen(PORT);
