@@ -258,14 +258,38 @@ app.post('/reservation', async (req, res, next) => {
         serviceproviderid: req.body.serviceproviderid,
       });
 
-      res.json({ debugMsg: 'Success!' });
+      res.json({ debugMsg: 'INSERT success!' });
     } catch (err) {
       console.log('ERROR from POST /reservation', err);
-      res.json({ debugMsg: 'Error!' });
+      res.json({ debugMsg: 'Error from INSERT!' });
     }
   } else {
     // Client or serviceprovider are booked
     res.json({ debugMsg: 'Client or serviceprovider are booked!' });
+  }
+});
+
+app.delete('/reservation/:id', async (req, res, next) => {
+  console.log('DELETE /reservation wepa-ht');
+
+  const id_to_delete = req.params.id;
+
+  // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
+  try {
+    const del = await Reservation.destroy({
+      where: {
+        id: id_to_delete,
+      },
+    });
+
+    if (del > 0) {
+      res.json({ debugMsg: 'DELETE success!' });
+    } else {
+      res.json({ debugMsg: 'Nothing to DELETE!' });
+    }
+  } catch (err) {
+    console.log('ERROR from DELETE /reservation', err);
+    res.json({ debugMsg: 'Error from DELETE!' });
   }
 });
 
