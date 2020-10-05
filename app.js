@@ -3,6 +3,7 @@ const express = require('express');
 const {
   Sequelize, DataTypes, Model, Op,
 } = require('sequelize');
+const queryString = require('querystring');
 
 const PORT = process.env.PORT || 8000;
 
@@ -266,6 +267,41 @@ app.post('/reservation', async (req, res, next) => {
   } else {
     // Client or serviceprovider are booked
     res.json({ debugMsg: 'Client or serviceprovider are booked!' });
+  }
+});
+
+app.get('/reservations2', async (req, res, next) => {
+  console.log('GET /reservations2?search_criteria wepa-ht');
+
+  // Use period of time as a query string
+  const { start } = req.query;
+  const { end } = req.query;
+
+  try {
+    // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
+    // https://sequelize.org/master/manual/eager-loading.html
+    const reservations = await Reservation.findAll({
+      include: [Client, ServiceProvider],
+      where:
+      {
+        [Op.and]: [
+          {
+            start: {
+              [Op.gte]: start,
+            },
+            end: {
+              [Op.lte]: end,
+            },
+          },
+        ],
+      },
+    });
+
+    console.log('Reservations:', JSON.stringify(reservations, null, 2));
+    res.json(reservations); // Content-Type: application/json;
+  } catch (err) {
+    console.log('ERROR from GET /reservations2?search_criteria', err);
+    res.json({ debugMsg: 'Error from GET /reservations2?search_criteria!' });
   }
 });
 
