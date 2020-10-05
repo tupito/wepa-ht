@@ -427,5 +427,83 @@ app.put('/reservation/:id', async (req, res, next) => {
   }
 });
 
+app.patch('/reservation/:id', async (req, res, next) => {
+  console.log('PATCH /reservation wepa-ht');
+
+  const id_to_update = req.params.id;
+
+  // RAW update without any checks or validations.
+  // TODO: Check JSON, what values are to be updated and validate them.
+
+  /*
+  // Check from the reservations if the client or the serviceprovider are booked
+  const check = await Reservation.findAll({
+    where:
+    {
+      [Op.and]: [
+        {
+          [Op.or]: [
+            { clientid: req.body.clientid },
+            { serviceproviderid: req.body.serviceproviderid },
+          ],
+        },
+        {
+          [Op.or]: [
+            {
+              start: {
+                [Op.between]: [req.body.start, req.body.end],
+              },
+            },
+            {
+              end: {
+                [Op.between]: [req.body.start, req.body.end],
+              },
+            },
+            {
+              [Op.and]: [
+                {
+                  start: {
+                    [Op.lte]: req.body.start,
+                  },
+                  end: {
+                    [Op.gte]: req.body.end,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  */
+
+  // Found any results?
+  // if (check.length === 0) {
+  // Nope, proceed with the update
+  // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
+  try {
+    const update = await Reservation.update({
+      start: req.body.start,
+      end: req.body.end,
+      clientid: req.body.clientid,
+      serviceproviderid: req.body.serviceproviderid,
+    }, {
+      where: {
+        id: id_to_update,
+      },
+    });
+
+    res.json({ debugMsg: 'PATCH success!' });
+  } catch (err) {
+    console.log('ERROR from PATCH /reservation', err);
+    res.json({ debugMsg: 'Error from PATCH!' });
+  }
+  /* } else {
+    // Client or serviceprovider are booked
+    res.json({ debugMsg: 'Client or serviceprovider are booked!' });
+  } */
+});
+
 app.listen(PORT);
 module.exports = app; // for mocha
