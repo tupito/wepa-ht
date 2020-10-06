@@ -294,13 +294,13 @@ app.post('/reservation', async (req, res, next) => {
 app.delete('/reservation/:id', async (req, res, next) => {
   console.log('DELETE /reservation wepa-ht');
 
-  const id_to_delete = req.params.id;
+  const idToDelete = req.params.id;
 
   // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
   try {
     const del = await Reservation.destroy({
       where: {
-        id: id_to_delete,
+        id: idToDelete,
       },
     });
 
@@ -378,75 +378,96 @@ app.get('/reservations3', async (req, res, next) => {
 });
 
 app.put('/reservation/:id', async (req, res, next) => {
-  console.log('PUT /reservation wepa-ht');
+  const idToUpdate = req.params.id;
+  let okToContinue = true;
 
-  const id_to_update = req.params.id;
-
-  // Check from the reservations if the client or the serviceprovider are booked
-  const check = await Reservation.findAll({
-    where:
-    {
-      [Op.and]: [
-        {
-          [Op.or]: [
-            { clientid: req.body.clientid },
-            { serviceproviderid: req.body.serviceproviderid },
-          ],
-        },
-        {
-          [Op.or]: [
-            {
-              start: {
-                [Op.between]: [req.body.start, req.body.end],
-              },
-            },
-            {
-              end: {
-                [Op.between]: [req.body.start, req.body.end],
-              },
-            },
-            {
-              [Op.and]: [
-                {
-                  start: {
-                    [Op.lte]: req.body.start,
-                  },
-                  end: {
-                    [Op.gte]: req.body.end,
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
+  // existence check for PUT params
+  const wantedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
+  wantedProps.forEach((prop) => {
+    if (!(prop in req.body)) {
+      okToContinue = false;
+      res.status(400).json({ errorMsg: `${prop} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+    }
   });
 
-  // Found any results?
-  if (check.length === 0) {
+  // time logic check for PUT params
+  if (okToContinue && req.body.start > req.body.end) {
+    okToContinue = false;
+    res.status(400).json({ errorMsg: 'start should not be greater then end' }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+  }
+
+  if (okToContinue) {
+  // Check from the reservations if the client or the serviceprovider are booked
+    const check = await Reservation.findAll({
+      where:
+      {
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { clientid: req.body.clientid },
+              { serviceproviderid: req.body.serviceproviderid },
+            ],
+          },
+          {
+            [Op.or]: [
+              {
+                start: {
+                  [Op.between]: [req.body.start, req.body.end],
+                },
+              },
+              {
+                end: {
+                  [Op.between]: [req.body.start, req.body.end],
+                },
+              },
+              {
+                [Op.and]: [
+                  {
+                    start: {
+                      [Op.lte]: req.body.start,
+                    },
+                    end: {
+                      [Op.gte]: req.body.end,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    // Found any results?
+    if (check.length === 0) {
     // Nope, proceed with the update
     // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
-    try {
-      const update = await Reservation.update({
-        start: req.body.start,
-        end: req.body.end,
-        clientid: req.body.clientid,
-        serviceproviderid: req.body.serviceproviderid,
-      }, {
-        where: {
-          id: id_to_update,
-        },
-      });
+      try {
+        const update = await Reservation.update({
+          start: req.body.start,
+          end: req.body.end,
+          clientid: req.body.clientid,
+          serviceproviderid: req.body.serviceproviderid,
+        }, {
+          where: {
+            id: idToUpdate,
+          },
+        });
 
-      res.json({ debugMsg: 'PUT success!' });
-    } catch (err) {
-      console.log('ERROR from PUT /reservation', err);
-      res.json({ debugMsg: 'Error from PUT!' });
+        // If found the reservation and update went succesfully
+        if (update > 0) {
+          res.status(201).json({ debugMsg: 'PUT success!' }); // 201 created
+        } else {
+          res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+        }
+      } catch (err) {
+        console.log('ERROR from PUT /reservation', err);
+        res.status(400).json({ debugMsg: 'Error from PUT!' }); // 400 Bad request
+      }
+    } else {
+      // Client or serviceprovider are booked
+      res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
     }
-  } else {
-    // Client or serviceprovider are booked
-    res.json({ debugMsg: 'Client or serviceprovider are booked!' });
   }
 });
 
