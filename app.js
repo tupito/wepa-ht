@@ -353,22 +353,28 @@ app.delete('/reservation/:id', async (req, res, next) => {
 
   const id_to_delete = req.params.id;
 
+  // parameter type check
+  if (!Number.isNaN(parseInt(id_to_delete, 10))) {
   // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
-  try {
-    const del = await Reservation.destroy({
-      where: {
-        id: id_to_delete,
-      },
-    });
 
-    if (del > 0) {
-      res.json({ debugMsg: 'DELETE success!' });
-    } else {
-      res.json({ debugMsg: 'Nothing to DELETE!' });
+    try {
+      const del = await Reservation.destroy({
+        where: {
+          id: id_to_delete,
+        },
+      });
+
+      if (del > 0) {
+        res.json({ debugMsg: 'DELETE success!' });
+      } else {
+        res.status(404).json({ errorMsg: 'Nothing to DELETE!' }); // 404 Not Found
+      }
+    } catch (err) {
+      console.log('ERROR from DELETE /reservation', err);
+      res.json({ debugMsg: 'Error from DELETE!' });
     }
-  } catch (err) {
-    console.log('ERROR from DELETE /reservation', err);
-    res.json({ debugMsg: 'Error from DELETE!' });
+  } else {
+    res.status(400).json({ errorMsg: `type of ${id_to_delete} is not number` });
   }
 });
 
