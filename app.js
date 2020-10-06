@@ -291,30 +291,6 @@ app.post('/reservation', async (req, res, next) => {
   // Check from the reservations if the client or the serviceprovider are booked
 });
 
-app.delete('/reservation/:id', async (req, res, next) => {
-  console.log('DELETE /reservation wepa-ht');
-
-  const idToDelete = req.params.id;
-
-  // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
-  try {
-    const del = await Reservation.destroy({
-      where: {
-        id: idToDelete,
-      },
-    });
-
-    if (del > 0) {
-      res.status(200).json({ debugMsg: 'OK - Deleted reservation' });
-    } else {
-      res.status(404).json({ debugMsg: 'NOK - Reservation not found' });
-    }
-  } catch (err) {
-    console.log('ERROR from DELETE /reservation', err);
-    res.status(400).json({ debugMsg: err });
-  }
-});
-
 app.get('/reservations2', async (req, res, next) => {
   console.log('GET /reservations2?search_criteria wepa-ht');
 
@@ -374,6 +350,36 @@ app.get('/reservations3', async (req, res, next) => {
     console.log('ERROR from GET /reservations3?search_criteria', err);
     // res.json({ debugMsg: 'Error from GET /reservations3?search_criteria!' });
     res.status(400).json({ debugMsg: err });
+  }
+});
+
+app.delete('/reservation/:id', async (req, res, next) => {
+  console.log('DELETE /reservation wepa-ht');
+
+  const idToDelete = req.params.id;
+
+  // parameter type check
+  if (!Number.isNaN(parseInt(idToDelete, 10))) {
+  // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
+
+    try {
+      const del = await Reservation.destroy({
+        where: {
+          id: idToDelete,
+        },
+      });
+
+      if (del > 0) {
+        res.json({ debugMsg: 'DELETE success!' });
+      } else {
+        res.status(404).json({ errorMsg: 'Nothing to DELETE!' }); // 404 Not Found
+      }
+    } catch (err) {
+      console.log('ERROR from DELETE /reservation', err);
+      res.json({ debugMsg: 'Error from DELETE!' });
+    }
+  } else {
+    res.status(400).json({ errorMsg: `type of ${idToDelete} is not number` });
   }
 });
 
