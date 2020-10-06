@@ -1,6 +1,10 @@
 // https://www.chaijs.com/api/bdd/ (Chai Assertion Library docs)
 // https://mochajs.org/ (eg. describe(), it() conventions)
-// https://devhints.io/chai (Chai.js cheatseet)
+// https://devhints.io/chai (Chai.js cheatsheet)
+// https://www.digitalocean.com/community/tutorials/test-a-node-restful-api-with-mocha-and-chai
+
+// https://restfulapi.net/http-status-codes/
+// https://www.restapitutorial.com/httpstatuscodes.html
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const { expect } = require('chai')
