@@ -186,10 +186,10 @@ app.get('/initdb', async (req, res, next) => {
   }
 });
 
-app.get('/reservations', (req, res, next) => {
+app.get('/reservations', async (req, res, next) => {
   console.log('GET /reservations wepa-ht');
 
-  (async () => {
+  try {
     // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
     // https://sequelize.org/master/manual/eager-loading.html
     const reservations = await Reservation.findAll({
@@ -197,8 +197,11 @@ app.get('/reservations', (req, res, next) => {
     });
 
     console.log('All reservations:', JSON.stringify(reservations, null, 2));
-    res.json(reservations); // Content-Type: application/json;
-  })();
+    res.status(200).json(reservations); // Content-Type: application/json;
+  } catch (err) {
+    console.log('ERROR from GET /reservations', err);
+    res.status(400).json({ debugMsg: err });
+  }
 });
 
 app.use(express.json());
@@ -288,6 +291,30 @@ app.post('/reservation', async (req, res, next) => {
   // Check from the reservations if the client or the serviceprovider are booked
 });
 
+app.delete('/reservation/:id', async (req, res, next) => {
+  console.log('DELETE /reservation wepa-ht');
+
+  const id_to_delete = req.params.id;
+
+  // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
+  try {
+    const del = await Reservation.destroy({
+      where: {
+        id: id_to_delete,
+      },
+    });
+
+    if (del > 0) {
+      res.status(200).json({ debugMsg: 'OK - Deleted reservation' });
+    } else {
+      res.status(404).json({ debugMsg: 'NOK - Reservation not found' });
+    }
+  } catch (err) {
+    console.log('ERROR from DELETE /reservation', err);
+    res.status(400).json({ debugMsg: err });
+  }
+});
+
 app.get('/reservations2', async (req, res, next) => {
   console.log('GET /reservations2?search_criteria wepa-ht');
 
@@ -316,10 +343,11 @@ app.get('/reservations2', async (req, res, next) => {
     });
 
     console.log('Reservations:', JSON.stringify(reservations, null, 2));
-    res.json(reservations); // Content-Type: application/json;
+    res.status(200).json(reservations); // Content-Type: application/json;
   } catch (err) {
     console.log('ERROR from GET /reservations2?search_criteria', err);
-    res.json({ debugMsg: 'Error from GET /reservations2?search_criteria!' });
+    // res.json({ debugMsg: 'Error from GET /reservations2?search_criteria!' });
+    res.status(400).json({ debugMsg: err });
   }
 });
 
@@ -341,34 +369,11 @@ app.get('/reservations3', async (req, res, next) => {
     });
 
     console.log('Reservations:', JSON.stringify(reservations, null, 2));
-    res.json(reservations); // Content-Type: application/json;
+    res.status(200).json(reservations); // Content-Type: application/json;
   } catch (err) {
     console.log('ERROR from GET /reservations3?search_criteria', err);
-    res.json({ debugMsg: 'Error from GET /reservations3?search_criteria!' });
-  }
-});
-
-app.delete('/reservation/:id', async (req, res, next) => {
-  console.log('DELETE /reservation wepa-ht');
-
-  const id_to_delete = req.params.id;
-
-  // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
-  try {
-    const del = await Reservation.destroy({
-      where: {
-        id: id_to_delete,
-      },
-    });
-
-    if (del > 0) {
-      res.json({ debugMsg: 'DELETE success!' });
-    } else {
-      res.json({ debugMsg: 'Nothing to DELETE!' });
-    }
-  } catch (err) {
-    console.log('ERROR from DELETE /reservation', err);
-    res.json({ debugMsg: 'Error from DELETE!' });
+    // res.json({ debugMsg: 'Error from GET /reservations3?search_criteria!' });
+    res.status(400).json({ debugMsg: err });
   }
 });
 
