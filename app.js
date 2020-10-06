@@ -344,13 +344,13 @@ app.delete('/reservation/:id', async (req, res, next) => {
     });
 
     if (del > 0) {
-      res.json({ debugMsg: 'DELETE success!' });
+      res.status(200).json({ debugMsg: 'OK - Deleted reservation' });
     } else {
-      res.json({ debugMsg: 'Nothing to DELETE!' });
+      res.status(404).json({ debugMsg: 'NOK - Reservation not found' });
     }
   } catch (err) {
     console.log('ERROR from DELETE /reservation', err);
-    res.json({ debugMsg: 'Error from DELETE!' });
+    res.status(400).json({ debugMsg: err });
   }
 });
 
