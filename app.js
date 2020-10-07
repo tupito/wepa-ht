@@ -352,32 +352,6 @@ app.get('/reservations2', async (req, res, next) => {
   }
 });
 
-app.get('/reservations3', async (req, res, next) => {
-  console.log('GET /reservations3?search_criteria wepa-ht');
-
-  // Serviceproviderid
-  const { sp } = req.query;
-
-  try {
-    // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
-    // https://sequelize.org/master/manual/eager-loading.html
-    const reservations = await Reservation.findAll({
-      include: [Client, ServiceProvider],
-      where:
-      {
-        serviceproviderid: sp,
-      },
-    });
-
-    console.log('Reservations:', JSON.stringify(reservations, null, 2));
-    res.status(200).json(reservations); // Content-Type: application/json;
-  } catch (err) {
-    console.log('ERROR from GET /reservations3?search_criteria', err);
-    // res.json({ debugMsg: 'Error from GET /reservations3?search_criteria!' });
-    res.status(400).json({ debugMsg: err });
-  }
-});
-
 app.delete('/reservation/:id', async (req, res, next) => {
   console.log('DELETE /reservation wepa-ht');
 
