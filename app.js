@@ -478,12 +478,33 @@ app.put('/reservation/:id', async (req, res, next) => {
 });
 
 app.patch('/reservation/:id', async (req, res, next) => {
-  console.log('PATCH /reservation wepa-ht');
+  const idToUpdate = req.params.id;
 
-  const id_to_update = req.params.id;
+  // Find the reservation
+  const reservation = await Reservation.findByPk(idToUpdate);
+  if (reservation === null) {
+    res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+  } else {
+    // Found the reservation
+    // Check the params
+    if (req.body.start !== undefined) reservation.start = req.body.start;
+    if (req.body.end !== undefined) reservation.end = req.body.end;
+    if (req.body.clientid !== undefined) reservation.clientid = req.body.clientid;
+    if (req.body.serviceproviderid !== undefined) {
+      reservation.serviceproviderid = req.body.serviceproviderid;
+    }
 
-  // RAW update without any checks or validations.
-  // TODO: Check JSON, what values are to be updated and validate them.
+    console.log(reservation);
+
+    // reservation.destroy ?
+
+    // Check from the reservations if the client or the serviceprovider are booked
+    // Not current id?
+
+    // Save or error
+    reservation.save();
+    res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
+  }
 
   /*
   // Check from the reservations if the client or the serviceprovider are booked
@@ -528,6 +549,7 @@ app.patch('/reservation/:id', async (req, res, next) => {
   });
   */
 
+  /*
   // Found any results?
   // if (check.length === 0) {
   // Nope, proceed with the update
@@ -540,19 +562,29 @@ app.patch('/reservation/:id', async (req, res, next) => {
       serviceproviderid: req.body.serviceproviderid,
     }, {
       where: {
-        id: id_to_update,
+        id: idToUpdate,
       },
     });
 
-    res.json({ debugMsg: 'PATCH success!' });
+    // If found the reservation and update went succesfully
+    if (update > 0) {
+      res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
+    } else {
+      res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+    }
   } catch (err) {
     console.log('ERROR from PATCH /reservation', err);
-    res.json({ debugMsg: 'Error from PATCH!' });
+    res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
   }
-  /* } else {
-    // Client or serviceprovider are booked
-    res.json({ debugMsg: 'Client or serviceprovider are booked!' });
-  } */
+  */
+
+  /*
+  } else {
+  // Client or serviceprovider are booked
+  res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
+  }
+  }
+  */
 });
 
 app.listen(PORT);
