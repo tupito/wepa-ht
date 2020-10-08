@@ -76,14 +76,26 @@ async function insertExampleData() {
 
 // helper functions
 
-function hasAcceptedParams(queryParams, acceptedParams) {
-  let paramsOk = true;
-  Object.keys(queryParams).forEach((queryParam) => {
-    if (!acceptedParams.includes(queryParam)) {
-      paramsOk = false;
+// return true/false
+function hasValidKeys(obj, validKeys) {
+  let valid = true;
+  Object.keys(obj).forEach((queryParam) => {
+    if (!validKeys.includes(queryParam)) {
+      valid = false;
     }
   });
-  return paramsOk;
+  return valid;
+}
+
+// return string
+function getUndefinedKey(arr, wantedKeys) {
+  let undefinedKey = '';
+  wantedKeys.forEach((key) => {
+    if (!(key in arr)) {
+      undefinedKey = key;
+    }
+  });
+  return undefinedKey;
 }
 
 // OBS!!!: TODO: Will crash if runned twice in same session
@@ -120,21 +132,17 @@ const getReservations = async (req, res) => {
     }
   } else {
     // SEARCH QUERY
-    let okToContinue = true;
-
     const whereQueryObject = { [Op.and]: [{}] }; // for SELECT WHERE xxx AND xxx conditions
 
-    // any reservation table column can be used as a search param
+    // any reservation table column (db) can be used as a search param
     const {
       start, end, spid, cid,
     } = req.query;
 
-    // verify param names
-    okToContinue = hasAcceptedParams(req.query, ['start', 'end', 'spid', 'cid']);
+    // verify param names, if not valid -> return error message
+    let okToContinue = hasValidKeys(req.query, ['start', 'end', 'spid', 'cid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
 
-    if (!okToContinue) {
-      res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
-    } else {
+    if (okToContinue) {
       // if searching with time, both "start" and "end" are needed
       if ((start && end === undefined) || (start === undefined && end)) {
         res.status(400).json({ errorMsg: 'Time query needs both start and end values' });
@@ -173,16 +181,15 @@ const getReservations = async (req, res) => {
 };
 
 const postReservation = async (req, res) => {
-  let okToContinue = true;
-
   // existence check for POST params
-  const wantedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
-  wantedProps.forEach((prop) => {
-    if (!(prop in req.body)) {
-      okToContinue = false;
-      res.status(400).json({ errorMsg: `${prop} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
-    }
-  });
+  const undefinedKey = getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+
+  let okToContinue = undefinedKey === ''; // true if no undefinedKey
+
+  if (undefinedKey) {
+    res.status(400).json({ errorMsg: `${undefinedKey} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+    okToContinue = false;
+  }
 
   // time logic check for POST params
   if (okToContinue && req.body.start > req.body.end) {
@@ -289,16 +296,16 @@ const deleteReservation = async (req, res) => {
 
 const putReservation = async (req, res) => {
   const idToUpdate = req.params.id;
-  let okToContinue = true;
 
   // existence check for PUT params
-  const wantedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
-  wantedProps.forEach((prop) => {
-    if (!(prop in req.body)) {
-      okToContinue = false;
-      res.status(400).json({ errorMsg: `${prop} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
-    }
-  });
+  const undefinedKey = getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+
+  let okToContinue = undefinedKey === ''; // true if no undefinedKey
+
+  if (undefinedKey) {
+    res.status(400).json({ errorMsg: `${undefinedKey} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+    okToContinue = false;
+  }
 
   // time logic check for PUT params
   if (okToContinue && req.body.start > req.body.end) {
@@ -386,7 +393,7 @@ const patchReservation = async (req, res) => {
   const idToUpdate = req.params.id;
 
   // parameter name check
-  okToContinue = hasAcceptedParams(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+  okToContinue = hasValidKeys(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
 
   if (!okToContinue) {
     res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
