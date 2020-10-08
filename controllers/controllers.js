@@ -389,32 +389,26 @@ const putReservation = async (req, res) => {
 };
 
 const patchReservation = async (req, res) => {
-  let okToContinue = true;
   const idToUpdate = req.params.id;
 
-  // parameter name check
-  okToContinue = hasValidKeys(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+  // verify param names, if not valid -> return error message
+  let okToContinue = hasValidKeys(req.body, ['start', 'end', 'clientid', 'serviceproviderid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
 
-  if (!okToContinue) {
-    res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
-  } else {
+  if (okToContinue) {
     // Find the reservation
     const reservation = await Reservation.findByPk(idToUpdate);
     if (reservation === null) {
       res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
     } else {
-      // Found the reservation
-
-      // Check the params
+      // Found the reservation, check the params
       if (req.body.start !== undefined) reservation.start = req.body.start;
       if (req.body.end !== undefined) reservation.end = req.body.end;
       if (req.body.clientid !== undefined) reservation.clientid = req.body.clientid;
       if (req.body.serviceproviderid !== undefined) {
         reservation.serviceproviderid = req.body.serviceproviderid;
       }
-
       /*
-      time logic check new values, Date.parse is a must have !!!
+      time logic check new values, Date.parse() is a must have !!!
       - reservation.start                         // "2021-10-03 11:00:00" string
       - reservation.start = req.body.start        // Date()
       */
