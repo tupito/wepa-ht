@@ -88,4 +88,90 @@ const getReservations = async (req, res, next) => {
   }
 };
 
+const postReservation = async (req, res, next) => {
+  let okToContinue = true;
+
+  // existence check for POST params
+  const wantedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
+  wantedProps.forEach((prop) => {
+    if (!(prop in req.body)) {
+      okToContinue = false;
+      res.status(400).json({ errorMsg: `${prop} undefined` }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+    }
+  });
+
+  // time logic check for POST params
+  if (okToContinue && req.body.start > req.body.end) {
+    okToContinue = false;
+    res.status(400).json({ errorMsg: 'start should not be greater then end' }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+  }
+
+  if (okToContinue) {
+    const check = await Reservation.findAll({
+      where:
+        {
+          [Op.and]: [
+            {
+              [Op.or]: [
+                { clientid: req.body.clientid },
+                { serviceproviderid: req.body.serviceproviderid },
+              ],
+            },
+            {
+              [Op.or]: [
+                {
+                  start: {
+                    [Op.between]: [req.body.start, req.body.end],
+                  },
+                },
+                {
+                  end: {
+                    [Op.between]: [req.body.start, req.body.end],
+                  },
+                },
+                {
+                  [Op.and]: [
+                    {
+                      start: {
+                        [Op.lte]: req.body.start,
+                      },
+                      end: {
+                        [Op.gte]: req.body.end,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+    });
+
+    // Found any results?
+    if (check.length === 0) {
+      // Nope, proceed with the insert
+      try {
+        const insert = await Reservation.create({
+          start: req.body.start,
+          end: req.body.end,
+          clientid: req.body.clientid,
+          serviceproviderid: req.body.serviceproviderid,
+        });
+
+        res.status(201).json({ debugMsg: 'INSERT success!' }); // 201 created
+      } catch (err) {
+        console.log('ERROR from POST /reservation', err);
+        res.status(400).json({ debugMsg: 'Error from INSERT!' }); // 400 Bad request
+      }
+    } else {
+      // Client or serviceprovider are booked
+      res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' }); // 400 Bad request
+    }
+  }
+
+  // https://sequelize.org/master/manual/model-querying-basics.html#applying-where-clauses
+  // Check from the reservations if the client or the serviceprovider are booked
+};
+
 module.exports.getReservations = getReservations;
+module.exports.postReservation = postReservation;
