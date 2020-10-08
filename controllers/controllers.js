@@ -74,6 +74,18 @@ async function insertExampleData() {
   });
 }
 
+// helper functions
+
+function hasAcceptedParams(queryParams, acceptedParams) {
+  let paramsOk = true;
+  Object.keys(queryParams).forEach((queryParam) => {
+    if (!acceptedParams.includes(queryParam)) {
+      paramsOk = false;
+    }
+  });
+  return paramsOk;
+}
+
 // OBS!!!: TODO: Will crash if runned twice in same session
 const getInitDB = async (req, res) => {
   const jsonResponse = [];
@@ -111,21 +123,18 @@ const getReservations = async (req, res) => {
     let okToContinue = true;
 
     const whereQueryObject = { [Op.and]: [{}] }; // for SELECT WHERE xxx AND xxx conditions
-    const acceptedSearchParams = ['start', 'end', 'spid', 'cid'];
 
     // any reservation table column can be used as a search param
     const {
       start, end, spid, cid,
     } = req.query;
 
-    Object.keys(req.query).forEach((queryParam) => {
-      if (!acceptedSearchParams.includes(queryParam)) {
-        res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
-        okToContinue = false;
-      }
-    });
+    // verify param names
+    okToContinue = hasAcceptedParams(req.query, ['start', 'end', 'spid', 'cid']);
 
-    if (okToContinue) {
+    if (!okToContinue) {
+      res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+    } else {
       // if searching with time, both "start" and "end" are needed
       if ((start && end === undefined) || (start === undefined && end)) {
         res.status(400).json({ errorMsg: 'Time query needs both start and end values' });
@@ -139,14 +148,9 @@ const getReservations = async (req, res) => {
       }
 
       // serviceproviderid in query string => add to WHERE
-      if (spid !== undefined) {
-        whereQueryObject[Op.and][0] = { serviceproviderid: spid };
-      }
-
+      if (spid !== undefined) whereQueryObject[Op.and][0] = { serviceproviderid: spid };
       // customerid in query string => add to WHERE
-      if (cid !== undefined) {
-        whereQueryObject[Op.and][0] = { clientid: cid };
-      }
+      if (cid !== undefined) whereQueryObject[Op.and][0] = { clientid: cid };
     }
 
     if (okToContinue) {
@@ -162,7 +166,6 @@ const getReservations = async (req, res) => {
         res.status(200).json(reservations); // Content-Type: application/json;
       } catch (err) {
         console.log('ERROR from GET /reservations2?search_criteria', err);
-        // res.json({ debugMsg: 'Error from GET /reservations2?search_criteria!' });
         res.status(400).json({ debugMsg: err });
       }
     }
@@ -380,20 +383,14 @@ const putReservation = async (req, res) => {
 
 const patchReservation = async (req, res) => {
   let okToContinue = true;
-
-  const acceptedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
-
-  // parameter name check
-  Object.keys(req.body).forEach((queryParam) => {
-    if (!acceptedProps.includes(queryParam)) {
-      res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
-      okToContinue = false;
-    }
-  });
-
   const idToUpdate = req.params.id;
 
-  if (okToContinue) {
+  // parameter name check
+  okToContinue = hasAcceptedParams(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+
+  if (!okToContinue) {
+    res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+  } else {
     // Find the reservation
     const reservation = await Reservation.findByPk(idToUpdate);
     if (reservation === null) {
