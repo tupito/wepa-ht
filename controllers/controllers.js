@@ -51,21 +51,22 @@ async function insertExampleData() {
   const serviceProvider = await ServiceProvider.create({ name: 'Dr. Jacoby' });
   console.log('Service-Provider', serviceProvider.name, 'inserted!');
 
-  const res1 = await Reservation.create({
+  // data for db
+  await Reservation.create({
     start: '2020-09-29 19:00',
     end: '2020-09-29 20:00',
     clientid: 1,
     serviceproviderid: 1,
   });
 
-  const res2 = await Reservation.create({
+  await Reservation.create({
     start: '2020-09-29 20:01',
     end: '2020-09-29 21:00',
     clientid: 2,
     serviceproviderid: 1,
   });
 
-  const res3 = await Reservation.create({
+  await Reservation.create({
     start: '2020-09-30 12:00',
     end: '2020-09-30 13:00',
     clientid: 1,
@@ -74,7 +75,7 @@ async function insertExampleData() {
 }
 
 // OBS!!!: TODO: Will crash if runned twice in same session
-const getInitDB = async (req, res, next) => {
+const getInitDB = async (req, res) => {
   const jsonResponse = [];
   try {
     await testDBConnection();
@@ -89,9 +90,9 @@ const getInitDB = async (req, res, next) => {
   }
 };
 
-const getReservations = async (req, res, next) => {
-  // GET ALL
+const getReservations = async (req, res) => {
   if (Object.keys(req.query).length === 0) {
+    // GET ALL
     try {
       // https://sequelize.org/master/manual/model-querying-basics.html#simple-select-queries
       // https://sequelize.org/master/manual/eager-loading.html
@@ -105,9 +106,8 @@ const getReservations = async (req, res, next) => {
       console.log('ERROR from GET /reservations', err);
       res.status(400).json({ debugMsg: err });
     }
-  }
-  // SEARCH QUERY
-  else {
+  } else {
+    // SEARCH QUERY
     let okToContinue = true;
 
     const whereQueryObject = { [Op.and]: [{}] }; // for SELECT WHERE xxx AND xxx conditions
@@ -169,7 +169,7 @@ const getReservations = async (req, res, next) => {
   }
 };
 
-const postReservation = async (req, res, next) => {
+const postReservation = async (req, res) => {
   let okToContinue = true;
 
   // existence check for POST params
@@ -232,7 +232,7 @@ const postReservation = async (req, res, next) => {
     if (check.length === 0) {
       // Nope, proceed with the insert
       try {
-        const insert = await Reservation.create({
+        await Reservation.create({
           start: req.body.start,
           end: req.body.end,
           clientid: req.body.clientid,
@@ -254,7 +254,7 @@ const postReservation = async (req, res, next) => {
   // Check from the reservations if the client or the serviceprovider are booked
 };
 
-const deleteReservation = async (req, res, next) => {
+const deleteReservation = async (req, res) => {
   console.log('DELETE /reservation wepa-ht');
 
   const idToDelete = req.params.id;
@@ -284,7 +284,7 @@ const deleteReservation = async (req, res, next) => {
   }
 };
 
-const putReservation = async (req, res, next) => {
+const putReservation = async (req, res) => {
   const idToUpdate = req.params.id;
   let okToContinue = true;
 
@@ -378,7 +378,7 @@ const putReservation = async (req, res, next) => {
   }
 };
 
-const patchReservation = async (req, res, next) => {
+const patchReservation = async (req, res) => {
   let okToContinue = true;
 
   const acceptedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
