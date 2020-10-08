@@ -125,6 +125,7 @@ app.get('/reservations', async (req, res, next) => {
       start, end, spid, cid,
     } = req.query;
 
+    // parameter name check
     Object.keys(req.query).forEach((queryParam) => {
       if (!acceptedSearchParams.includes(queryParam)) {
         res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
@@ -388,97 +389,124 @@ app.put('/reservation/:id', async (req, res, next) => {
 });
 
 app.patch('/reservation/:id', async (req, res, next) => {
+  let okToContinue = true;
+
+  const acceptedProps = ['start', 'end', 'clientid', 'serviceproviderid'];
+
+  // parameter name check
+  Object.keys(req.body).forEach((queryParam) => {
+    if (!acceptedProps.includes(queryParam)) {
+      res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+      okToContinue = false;
+    }
+  });
+
   const idToUpdate = req.params.id;
 
-  // Find the reservation
-  const reservation = await Reservation.findByPk(idToUpdate);
-  if (reservation === null) {
-    res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
-  } else {
-    // Found the reservation
-    // Check the params
-    if (req.body.start !== undefined) reservation.start = req.body.start;
-    if (req.body.end !== undefined) reservation.end = req.body.end;
-    if (req.body.clientid !== undefined) reservation.clientid = req.body.clientid;
-    if (req.body.serviceproviderid !== undefined) {
-      reservation.serviceproviderid = req.body.serviceproviderid;
-    }
+  if (okToContinue) {
+    // Find the reservation
+    const reservation = await Reservation.findByPk(idToUpdate);
+    if (reservation === null) {
+      res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+    } else {
+      // Found the reservation
 
-    // Check from the reservations if the client or the serviceprovider are booked
-    const check = await Reservation.findAll({
-      where:
-      {
-        [Op.and]: [
+      // Check the params
+      if (req.body.start !== undefined) reservation.start = req.body.start;
+      if (req.body.end !== undefined) reservation.end = req.body.end;
+      if (req.body.clientid !== undefined) reservation.clientid = req.body.clientid;
+      if (req.body.serviceproviderid !== undefined) {
+        reservation.serviceproviderid = req.body.serviceproviderid;
+      }
+
+      /*
+      time logic check new values, Date.parse is a must have !!!
+      - reservation.start                         // "2021-10-03 11:00:00" string
+      - reservation.start = req.body.start        // Date()
+      */
+      if (Date.parse(reservation.start) > Date.parse(reservation.end)) {
+        okToContinue = false;
+        res.status(400).json({ errorMsg: 'start should not be greater then end' }); // 400 Bad request, eg. {errorMsg: "time undefined"}
+      }
+
+      if (okToContinue) {
+        // Check from the reservations if the client or the serviceprovider are booked
+        const check = await Reservation.findAll({
+          where:
           {
-            [Op.or]: [
-              { clientid: reservation.clientid },
-              { serviceproviderid: reservation.serviceproviderid },
-            ],
-          },
-          {
-            id: { // Leave the original reservation out from the search
-              [Op.ne]: idToUpdate,
-            },
-          },
-          {
-            [Op.or]: [
+            [Op.and]: [
               {
-                start: {
-                  [Op.between]: [reservation.start, reservation.end],
+                [Op.or]: [
+                  { clientid: reservation.clientid },
+                  { serviceproviderid: reservation.serviceproviderid },
+                ],
+              },
+              {
+                id: { // Leave the original reservation out from the search
+                  [Op.ne]: idToUpdate,
                 },
               },
               {
-                end: {
-                  [Op.between]: [reservation.start, reservation.end],
-                },
-              },
-              {
-                [Op.and]: [
+                [Op.or]: [
                   {
                     start: {
-                      [Op.lte]: reservation.start,
+                      [Op.between]: [reservation.start, reservation.end],
                     },
+                  },
+                  {
                     end: {
-                      [Op.gte]: reservation.end,
+                      [Op.between]: [reservation.start, reservation.end],
                     },
+                  },
+                  {
+                    [Op.and]: [
+                      {
+                        start: {
+                          [Op.lte]: reservation.start,
+                        },
+                        end: {
+                          [Op.gte]: reservation.end,
+                        },
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
-        ],
-      },
-    });
-
-    // Found any results?
-    if (check.length === 0) {
-      // Nope, proceed with the update
-      // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
-      try {
-        const update = await Reservation.update({
-          start: reservation.start,
-          end: reservation.end,
-          clientid: reservation.clientid,
-          serviceproviderid: reservation.serviceproviderid,
-        }, {
-          where: {
-            id: idToUpdate,
-          },
         });
 
-        // If found the reservation and update went succesfully
-        if (update > 0) {
-          res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
+        // Found any results?
+        if (check.length === 0) {
+        // Nope, proceed with the update
+        // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
+          try {
+            const update = await Reservation.update({
+              start: reservation.start,
+              end: reservation.end,
+              clientid: reservation.clientid,
+              serviceproviderid: reservation.serviceproviderid,
+            }, {
+              where: {
+                id: idToUpdate,
+              },
+            });
+
+            // If found the reservation and update went succesfully
+            if (update > 0) {
+              res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
+            } else {
+              res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+            }
+          } catch (err) {
+            console.log('ERROR from PATCH /reservation', err);
+            res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
+          }
         } else {
-          res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+        // Client or serviceprovider are booked
+          res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
         }
-      } catch (err) {
-        console.log('ERROR from PATCH /reservation', err);
-        res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
       }
-    } else {
-      // Client or serviceprovider are booked
-      res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
     }
   }
 });
