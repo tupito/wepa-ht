@@ -173,5 +173,36 @@ const postReservation = async (req, res, next) => {
   // Check from the reservations if the client or the serviceprovider are booked
 };
 
+const deleteReservation = async (req, res, next) => {
+  console.log('DELETE /reservation wepa-ht');
+
+  const idToDelete = req.params.id;
+
+  // parameter type check
+  if (!Number.isNaN(parseInt(idToDelete, 10))) {
+    // https://sequelize.org/master/manual/model-querying-basics.html#simple-delete-queries
+
+    try {
+      const del = await Reservation.destroy({
+        where: {
+          id: idToDelete,
+        },
+      });
+
+      if (del > 0) {
+        res.json({ debugMsg: 'DELETE success!' });
+      } else {
+        res.status(404).json({ errorMsg: 'Nothing to DELETE!' }); // 404 Not Found
+      }
+    } catch (err) {
+      console.log('ERROR from DELETE /reservation', err);
+      res.json({ debugMsg: 'Error from DELETE!' });
+    }
+  } else {
+    res.status(400).json({ errorMsg: `type of ${idToDelete} is not number` });
+  }
+};
+
 module.exports.getReservations = getReservations;
 module.exports.postReservation = postReservation;
+module.exports.deleteReservation = deleteReservation;
