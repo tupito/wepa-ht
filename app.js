@@ -1,8 +1,6 @@
 const { json } = require('express');
 const express = require('express');
-const {
-  Sequelize, DataTypes, Model, Op,
-} = require('sequelize');
+const { Op } = require('sequelize');
 const queryString = require('querystring');
 
 const PORT = process.env.PORT || 8000;
@@ -10,100 +8,12 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 
 // Database connection
-const sequelize = new Sequelize('wepa-ht', 'root', 'root', {
-  host: 'localhost',
-  port: 3306,
-  dialect: 'mariadb',
-  // https://devstudioonline.com/article/sequelize-set-timezone-and-datetime-format-for-mysql
-  timezone: 'Europe/Helsinki', // for writing to database
-  dialectOptions: {
-    useUTC: false, // for reading from database
-    dateStrings: true,
-    typeCast: true,
-    timezone: 'Europe/Helsinki', // only to disable warning: "please use IANA standard timezone format ('Etc/GMT-3')"
-  },
-  define: {
-    // https://sequelize.org/master/manual/model-basics.html#enforcing-the-table-name-to-be-equal-to-the-model-name
-    freezeTableName: true, // Table name = model name
-  },
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
-  },
-});
-// const sequelize = new Sequelize('mariadb://root:root@localhost:3306/wepa-ht');
+const sequelize = require('./models/sequelize');
 
 // Sequelize models
-// TAPA 1: sequelize.define
-// If you don't define a primaryKey then sequelize uses id by default.
-const Client = sequelize.define('client', {
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
-
-const ServiceProvider = sequelize.define('serviceProvider', {
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-});
-
-// https://sequelize.org/master/manual/assocs.html#implementation-3
-const Reservation = sequelize.define('reservation', {
-  start: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  end: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  clientid: {
-    type: DataTypes.INTEGER,
-    references: { // Liitetään clientid-kenttä Client-modelin id-kenttään
-      model: Client,
-      key: 'id',
-    },
-  },
-  serviceproviderid: {
-    type: DataTypes.INTEGER,
-    references: { // Liitetään serviceid-kenttä ServiceProvider-modelin id-kenttään
-      model: ServiceProvider,
-      key: 'id',
-    },
-  },
-});
-
-/* TAPA 2: Extending Model
-// ERROR: Vain yksi class per file!
-class Client extends Model {}
-Client.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-  },
-  name: DataTypes.STRING,
-}, {
-  sequelize,
-  modelName: 'Client',
-});
-
-class ServiceProvider extends Model {}
-Client.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-  },
-  name: DataTypes.STRING,
-}, {
-  sequelize,
-  modelName: 'Service-Provider',
-});
-*/
+const Client = require('./models/client');
+const ServiceProvider = require('./models/serviceprovider');
+const Reservation = require('./models/reservation');
 
 // Testing db connection
 async function testDBConnection() {
