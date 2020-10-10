@@ -1,5 +1,5 @@
 // Database connection
-const sequelize = require('../models/sequelize');
+const sequelize = require('../config/sequelize');
 
 // Sequelize models
 const Client = require('../models/client');
