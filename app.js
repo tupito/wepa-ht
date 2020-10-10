@@ -74,7 +74,16 @@ app.get('/authtest', jwtMW /* Using the express jwt MW here */, (req, res) => {
   res.send('You are authenticated'); // Sending some response when authenticated
 });
 
-// Error handling
+/// jwt routes end...
+
+app.get('/initdb', jwtMW, controllers.getInitDB);
+app.get('/reservations', jwtMW, controllers.getReservations);
+app.post('/reservation', jwtMW, controllers.postReservation);
+app.delete('/reservation/:id', jwtMW, controllers.deleteReservation);
+app.put('/reservation/:id', jwtMW, controllers.putReservation);
+app.patch('/reservation/:id', jwtMW, controllers.patchReservation);
+
+// jwt Error handling
 app.use((err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
     // Send the error rather than to show it on the console
@@ -83,15 +92,6 @@ app.use((err, req, res, next) => {
     next(err);
   }
 });
-
-/// jwt routes end...
-
-app.get('/initdb', controllers.getInitDB);
-app.get('/reservations', controllers.getReservations);
-app.post('/reservation', controllers.postReservation);
-app.delete('/reservation/:id', controllers.deleteReservation);
-app.put('/reservation/:id', controllers.putReservation);
-app.patch('/reservation/:id', controllers.patchReservation);
 
 app.listen(PORT);
 module.exports = app; // for mocha

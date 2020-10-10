@@ -6,15 +6,34 @@ const server = require('../app')
 chai.use(chaiHttp)
 
 const endpoint = '/reservation/1'
+let token = ''
 
 describe('PUT /reservation', () => {
+  before(async () => { // runs once before the first test in this block, get Authorization token
+    const loginCredentials = { username: 'bob', password: 'blackLodge' }
+    const res = await chai.request(server).post('/login').set('content-type', 'application/x-www-form-urlencoded').send(loginCredentials)
+    token = `Bearer ${res.body.token}`
+  })
+
+  it('should fail without Authorization token', async () => {
+    const res = await chai.request(server).get('/reservations?start=2020-09-29 19:00:00&end=2020-09-30 13:00:00')
+
+    /* eslint semi: ["error", "never"] */
+    expect(res.status).to.equal(401)
+    expect(res.body).to.be.an('object')
+    expect(res.body).to.have.property('name')
+    expect(res.body.name).to.equal('UnauthorizedError')
+    expect(res.body).to.have.property('message')
+    expect(res.body.message).to.equal('No authorization token was found')
+  })
+
   it('should not accept PUT reservation without start', async () => {
     const faultyReservation = {
       end: '2020-10-03 11:00',
       clientid: 2,
       serviceproviderid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(faultyReservation)
+    const res = await chai.request(server).put(endpoint).send(faultyReservation).set('Authorization', token)
     /* eslint semi: ["error", "never"] */
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res.body).to.be.an('object')
@@ -28,7 +47,7 @@ describe('PUT /reservation', () => {
       clientid: 2,
       serviceproviderid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(faultyReservation)
+    const res = await chai.request(server).put(endpoint).send(faultyReservation).set('Authorization', token)
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res.body).to.be.an('object')
     expect(res.body).to.have.property('errorMsg')
@@ -41,7 +60,7 @@ describe('PUT /reservation', () => {
       end: '2020-10-03 11:00',
       serviceproviderid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(faultyReservation)
+    const res = await chai.request(server).put(endpoint).send(faultyReservation).set('Authorization', token)
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res.body).to.be.an('object')
     expect(res.body).to.have.property('errorMsg')
@@ -54,7 +73,7 @@ describe('PUT /reservation', () => {
       end: '2020-10-03 11:00',
       clientid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(faultyReservation)
+    const res = await chai.request(server).put(endpoint).send(faultyReservation).set('Authorization', token)
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res).to.be.an('object')
     expect(res.body).to.have.property('errorMsg')
@@ -68,7 +87,7 @@ describe('PUT /reservation', () => {
       clientid: 2,
       serviceproviderid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(reservationDeny)
+    const res = await chai.request(server).put(endpoint).send(reservationDeny).set('Authorization', token)
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res.body).to.be.an('object')
     expect(res.body).to.have.property('errorMsg')
@@ -83,7 +102,7 @@ describe('PUT /reservation', () => {
       serviceproviderid: 1,
     }
 
-    const res = await chai.request(server).put(endpoint).send(reservationAccept)
+    const res = await chai.request(server).put(endpoint).send(reservationAccept).set('Authorization', token)
     expect(res.status).to.equal(201) // 201 created
     expect(res.body).to.be.an('object')
     expect(res.body).to.have.property('debugMsg')
@@ -97,7 +116,7 @@ describe('PUT /reservation', () => {
       clientid: 2,
       serviceproviderid: 1,
     }
-    const res = await chai.request(server).put(endpoint).send(reservationDeny)
+    const res = await chai.request(server).put(endpoint).send(reservationDeny).set('Authorization', token)
     expect(res.status).to.equal(400) // 400 Bad request
     expect(res.body).to.be.an('object')
     expect(res.body).to.have.property('errorMsg')

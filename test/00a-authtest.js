@@ -19,16 +19,10 @@ describe('authentication', () => {
     expect(res.body.name).to.equal('UnauthorizedError')
     expect(res.body).to.have.property('message')
     expect(res.body.message).to.equal('No authorization token was found')
-    /*
-    TODO: TEST EVERY ROUTE
-    */
   })
 
   it('should not accept /login with wrong credentials', async () => {
-    const wrongCredentials = {
-      username: 'bob',
-      password: 'whiteLodge',
-    }
+    const wrongCredentials = { username: 'bob', password: 'whiteLodge' }
     const res = await chai.request(server).post('/login').set('content-type', 'application/x-www-form-urlencoded').send(wrongCredentials)
     /* eslint semi: ["error", "never"] */
     expect(res.status).to.equal(401)
@@ -42,10 +36,7 @@ describe('authentication', () => {
   })
 
   it('should accept /login with right credentials', async () => {
-    const rightCredentials = {
-      username: 'bob',
-      password: 'blackLodge',
-    }
+    const rightCredentials = { username: 'bob', password: 'blackLodge' }
     const res = await chai.request(server).post('/login').set('content-type', 'application/x-www-form-urlencoded').send(rightCredentials)
     expect(res.status).to.equal(200)
     expect(res.body).to.be.an('object')
