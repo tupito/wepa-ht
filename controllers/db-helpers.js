@@ -1,4 +1,5 @@
 // Database connection
+const { Op } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
 // Sequelize models
@@ -72,6 +73,56 @@ async function insertExampleData() {
   });
 }
 
+// Check if the timeframe, client or servicdeprovider are free
+async function checkOverlappingReservations(cid, spid, startParam, endParam, rid) {
+  const check = await Reservation.findAll({
+    where:
+      {
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { clientid: cid },
+              { serviceproviderid: spid },
+            ],
+          },
+          {
+            id: { // Leave the original reservation out from the search, 0 to skip
+              [Op.ne]: rid,
+            },
+          },
+          {
+            [Op.or]: [
+              {
+                start: {
+                  [Op.between]: [startParam, endParam],
+                },
+              },
+              {
+                end: {
+                  [Op.between]: [startParam, endParam],
+                },
+              },
+              {
+                [Op.and]: [
+                  {
+                    start: {
+                      [Op.lte]: startParam,
+                    },
+                    end: {
+                      [Op.gte]: endParam,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+  });
+  return check;
+}
+
 module.exports.testDBConnection = testDBConnection;
 module.exports.synchronizeDBModels = synchronizeDBModels;
 module.exports.insertExampleData = insertExampleData;
+module.exports.checkOverlappingReservations = checkOverlappingReservations;

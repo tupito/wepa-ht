@@ -111,45 +111,9 @@ const postReservation = async (req, res) => {
   }
 
   if (okToContinue) {
-    const check = await Reservation.findAll({
-      where:
-        {
-          [Op.and]: [
-            {
-              [Op.or]: [
-                { clientid: req.body.clientid },
-                { serviceproviderid: req.body.serviceproviderid },
-              ],
-            },
-            {
-              [Op.or]: [
-                {
-                  start: {
-                    [Op.between]: [req.body.start, req.body.end],
-                  },
-                },
-                {
-                  end: {
-                    [Op.between]: [req.body.start, req.body.end],
-                  },
-                },
-                {
-                  [Op.and]: [
-                    {
-                      start: {
-                        [Op.lte]: req.body.start,
-                      },
-                      end: {
-                        [Op.gte]: req.body.end,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-    });
+    // Check from the reservations if the client or the serviceprovider are booked
+    const check = await dbHelper.checkOverlappingReservations(req.body.clientid,
+      req.body.serviceproviderid, req.body.start, req.body.end, 0);
 
     // Found any results?
     if (check.length === 0) {
@@ -228,45 +192,8 @@ const putReservation = async (req, res) => {
 
   if (okToContinue) {
     // Check from the reservations if the client or the serviceprovider are booked
-    const check = await Reservation.findAll({
-      where:
-        {
-          [Op.and]: [
-            {
-              [Op.or]: [
-                { clientid: req.body.clientid },
-                { serviceproviderid: req.body.serviceproviderid },
-              ],
-            },
-            {
-              [Op.or]: [
-                {
-                  start: {
-                    [Op.between]: [req.body.start, req.body.end],
-                  },
-                },
-                {
-                  end: {
-                    [Op.between]: [req.body.start, req.body.end],
-                  },
-                },
-                {
-                  [Op.and]: [
-                    {
-                      start: {
-                        [Op.lte]: req.body.start,
-                      },
-                      end: {
-                        [Op.gte]: req.body.end,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-    });
+    const check = await dbHelper.checkOverlappingReservations(req.body.clientid,
+      req.body.serviceproviderid, req.body.start, req.body.end, 0);
 
     // Found any results?
     if (check.length === 0) {
@@ -332,55 +259,13 @@ const patchReservation = async (req, res) => {
 
       if (okToContinue) {
         // Check from the reservations if the client or the serviceprovider are booked
-        const check = await Reservation.findAll({
-          where:
-          {
-            [Op.and]: [
-              {
-                [Op.or]: [
-                  { clientid: reservation.clientid },
-                  { serviceproviderid: reservation.serviceproviderid },
-                ],
-              },
-              {
-                id: { // Leave the original reservation out from the search
-                  [Op.ne]: idToUpdate,
-                },
-              },
-              {
-                [Op.or]: [
-                  {
-                    start: {
-                      [Op.between]: [reservation.start, reservation.end],
-                    },
-                  },
-                  {
-                    end: {
-                      [Op.between]: [reservation.start, reservation.end],
-                    },
-                  },
-                  {
-                    [Op.and]: [
-                      {
-                        start: {
-                          [Op.lte]: reservation.start,
-                        },
-                        end: {
-                          [Op.gte]: reservation.end,
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        });
+        const check = await dbHelper.checkOverlappingReservations(reservation.clientid,
+          reservation.serviceproviderid, reservation.start, reservation.end, idToUpdate);
 
         // Found any results?
         if (check.length === 0) {
-        // Nope, proceed with the update
-        // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
+          // Nope, proceed with the update
+          // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
           try {
             const update = await Reservation.update({
               start: reservation.start,
