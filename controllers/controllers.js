@@ -6,41 +6,20 @@ const ServiceProvider = require('../models/serviceprovider');
 const Reservation = require('../models/reservation');
 
 // Database functions
-const db_helper = require('./db-helpers');
+const dbHelper = require('./db-helpers');
 
-// helper functions
-
-// return true/false
-function hasValidKeys(obj, validKeys) {
-  let valid = true;
-  Object.keys(obj).forEach((queryParam) => {
-    if (!validKeys.includes(queryParam)) {
-      valid = false;
-    }
-  });
-  return valid;
-}
-
-// return string
-function getUndefinedKey(arr, wantedKeys) {
-  let undefinedKey = '';
-  wantedKeys.forEach((key) => {
-    if (!(key in arr)) {
-      undefinedKey = key;
-    }
-  });
-  return undefinedKey;
-}
+// Validation functions
+const validationHelper = require('./validation-helpers');
 
 // OBS!!!: TODO: Will crash if runned twice in same session
 const getInitDB = async (req, res) => {
   const jsonResponse = [];
   try {
-    await db_helper.testDBConnection();
+    await dbHelper.testDBConnection();
     jsonResponse.push({ debugMsg: 'OK - Tested DB' });
-    await db_helper.synchronizeDBModels(); // !!! await: cannot insert data before db tables exists
+    await dbHelper.synchronizeDBModels(); // !!! await: cannot insert data before db tables exists
     jsonResponse.push({ debugMsg: 'OK - Synchronized models' });
-    await db_helper.insertExampleData();
+    await dbHelper.insertExampleData();
     jsonResponse.push({ debugMsg: 'OK - Inserted example data to DB' });
     res.send(jsonResponse);
   } catch (err) {
@@ -74,7 +53,7 @@ const getReservations = async (req, res) => {
     } = req.query;
 
     // verify param names, if not valid -> return error message
-    let okToContinue = hasValidKeys(req.query, ['start', 'end', 'spid', 'cid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+    let okToContinue = validationHelper.hasValidKeys(req.query, ['start', 'end', 'spid', 'cid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
 
     if (okToContinue) {
       // if searching with time, both "start" and "end" are needed
@@ -116,7 +95,7 @@ const getReservations = async (req, res) => {
 
 const postReservation = async (req, res) => {
   // existence check for POST params
-  const undefinedKey = getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+  const undefinedKey = validationHelper.getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
 
   let okToContinue = undefinedKey === ''; // true if no undefinedKey
 
@@ -232,7 +211,7 @@ const putReservation = async (req, res) => {
   const idToUpdate = req.params.id;
 
   // existence check for PUT params
-  const undefinedKey = getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
+  const undefinedKey = validationHelper.getUndefinedKey(req.body, ['start', 'end', 'clientid', 'serviceproviderid']);
 
   let okToContinue = undefinedKey === ''; // true if no undefinedKey
 
@@ -326,7 +305,7 @@ const patchReservation = async (req, res) => {
   const idToUpdate = req.params.id;
 
   // verify param names, if not valid -> return error message
-  let okToContinue = hasValidKeys(req.body, ['start', 'end', 'clientid', 'serviceproviderid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+  let okToContinue = validationHelper.hasValidKeys(req.body, ['start', 'end', 'clientid', 'serviceproviderid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
 
   if (okToContinue) {
     // Find the reservation
