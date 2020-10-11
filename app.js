@@ -84,7 +84,7 @@ app.get('/authtest', jwtMW /* Using the express jwt MW here */, (req, res) => {
 
 /// jwt routes end...
 
-app.get('/initdb', jwtMW, controllers.getInitDB);
+app.get('/initdb', controllers.getInitDB);
 app.get('/reservations', jwtMW, controllers.getReservations);
 app.post('/reservation', jwtMW, controllers.postReservation);
 app.delete('/reservation/:id', jwtMW, controllers.deleteReservation);
