@@ -1,10 +1,14 @@
 const { Sequelize } = require('sequelize');
 
+// custom config, show/hide console.logs
+const { showSequelizeLog } = require('./custom');
+
 // Database connection
 const sequelize = new Sequelize('wepa-ht', 'root', 'root', {
   host: 'localhost',
   port: 3306,
   dialect: 'mariadb',
+  logging: showSequelizeLog,
   // https://devstudioonline.com/article/sequelize-set-timezone-and-datetime-format-for-mysql
   timezone: 'Europe/Helsinki', // for writing to database
   dialectOptions: {

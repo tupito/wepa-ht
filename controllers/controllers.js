@@ -115,7 +115,8 @@ const postReservation = async (req, res) => {
   }
 
   if (okToContinue) {
-    // Check from the reservations if the client or the serviceprovider are booked
+    // Check from the reservations if the client or the serviceprovider are booked.
+    // Param 0 means no reservations are skipped during the check.
     const check = await dbHelper.checkOverlappingReservations(req.body, 0);
 
     // Found any results?
@@ -131,7 +132,7 @@ const postReservation = async (req, res) => {
 
         res.status(201).json({ debugMsg: 'INSERT success!' }); // 201 created
       } catch (err) {
-        if (showConsoleLog) ('ERROR from POST /reservation', err);
+        if (showConsoleLog) console.log('ERROR from POST /reservation', err);
         res.status(400).json({ debugMsg: 'Error from INSERT!' }); // 400 Bad request
       }
     } else {
@@ -189,7 +190,8 @@ const putReservation = async (req, res) => {
   }
 
   if (okToContinue) {
-    // Check from the reservations if the client or the serviceprovider are booked
+    // Check from the reservations if the client or the serviceprovider are booked.
+    // Param 0 means no reservations are skipped during the check.
     const check = await dbHelper.checkOverlappingReservations(req.body, 0);
 
     // Found any results?
@@ -255,7 +257,8 @@ const patchReservation = async (req, res) => {
       }
 
       if (okToContinue) {
-        // Check from the reservations if the client or the serviceprovider are booked
+        // Check from the reservations if the client or the serviceprovider are booked.
+        // Second parameter is the id of the reservation we want to skip.
         const check = await dbHelper.checkOverlappingReservations(reservation, idToUpdate);
 
         // Found any results?

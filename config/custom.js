@@ -2,6 +2,7 @@
 
 const conf = {
   showConsoleLog: false,
+  showSequelizeLog: false,
   // anotherConf: true/false
 };
 
