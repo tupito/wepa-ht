@@ -265,35 +265,39 @@ const patchReservation = async (req, res) => {
         // Second parameter is the id of the reservation we want to skip.
         const check = await dbHelper.checkOverlappingReservations(reservation, idToUpdate);
 
+        try {
         // Found any results?
-        if (check.length === 0) {
+          if (check.length === 0) {
           // Nope, proceed with the update
           // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
-          try {
-            const update = await Reservation.update({
-              start: reservation.start,
-              end: reservation.end,
-              clientid: reservation.clientid,
-              serviceproviderid: reservation.serviceproviderid,
-            }, {
-              where: {
-                id: idToUpdate,
-              },
-            });
+            try {
+              const update = await Reservation.update({
+                start: reservation.start,
+                end: reservation.end,
+                clientid: reservation.clientid,
+                serviceproviderid: reservation.serviceproviderid,
+              }, {
+                where: {
+                  id: idToUpdate,
+                },
+              });
 
-            // If found the reservation and update went succesfully
-            if (update > 0) {
-              res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
-            } else {
-              res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+              // If found the reservation and update went succesfully
+              if (update > 0) {
+                res.status(201).json({ debugMsg: 'PATCH success!' }); // 201 created
+              } else {
+                res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
+              }
+            } catch (err) {
+              if (showConsoleLog) console.log('ERROR from PATCH /reservation', err);
+              res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
             }
-          } catch (err) {
-            if (showConsoleLog) console.log('ERROR from PATCH /reservation', err);
-            res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
+          } else {
+            // Client or serviceprovider are booked
+            res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
           }
-        } else {
-        // Client or serviceprovider are booked
-          res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' });
+        } catch (err) {
+          if (showConsoleLog) console.log(err);
         }
       }
     }
