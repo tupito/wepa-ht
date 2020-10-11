@@ -5,6 +5,7 @@ const exjwt = require('express-jwt');
 
 // Controllers
 const controllers = require('./controllers/controllers');
+const User = require('./models/user');
 
 const PORT = process.env.PORT || 8000;
 
@@ -29,6 +30,7 @@ const jwtMW = exjwt({
 
 // jwt mockdata start...
 // MOCKING DB just for test
+/*
 const mockUsers = [
   {
     id: 1,
@@ -36,21 +38,27 @@ const mockUsers = [
     password: 'blackLodge',
   },
 ];
+*/
 // jwt mockdata end...
 
 // jwt routes start...
 
 // LOGIN ROUTE
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   // Use your DB ORM logic here to find user and compare password
   /* Use your password hash checking logic here ! */
-  const foundUser = mockUsers.filter((mock) => (mock.username === username && mock.password === password));
+  // const foundUser = mockUsers.filter((mock) => (mock.username === username && mock.password === password));
+  const foundUser = await User.findOne({
+    where: {
+      username, password,
+    },
+  });
 
-  if (foundUser.length > 0) {
+  if (foundUser !== null) {
     // If all credentials are correct do this
     const token = jwt.sign(
-      { id: foundUser[0].id, username: foundUser[0].username },
+      { id: foundUser.id, username: foundUser.username },
       'never use this simple secret in real life',
       { expiresIn: 129600 },
     ); // Sigining the token

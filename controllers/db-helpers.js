@@ -6,6 +6,7 @@ const sequelize = require('../config/sequelize');
 const Client = require('../models/client');
 const ServiceProvider = require('../models/serviceprovider');
 const Reservation = require('../models/reservation');
+const User = require('../models/user');
 
 // Testing db connection
 async function testDBConnection() {
@@ -51,6 +52,11 @@ async function insertExampleData() {
 
   const serviceProvider = await ServiceProvider.create({ name: 'Dr. Jacoby' });
   console.log('Service-Provider', serviceProvider.name, 'inserted!');
+
+  await User.create({
+    username: 'bob',
+    password: 'blackLodge',
+  });
 
   // data for db
   await Reservation.create({
