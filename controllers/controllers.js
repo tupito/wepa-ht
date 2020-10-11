@@ -11,6 +11,9 @@ const dbHelper = require('./db-helpers');
 // Validation functions
 const validationHelper = require('./validation-helpers');
 
+// custom config, show/hide console.logs
+const { showConsoleLog } = require('../config/custom');
+
 // OBS!!!: TODO: Will crash if runned twice in same session
 const getInitDB = async (req, res) => {
   const jsonResponse = [];
@@ -23,7 +26,7 @@ const getInitDB = async (req, res) => {
     jsonResponse.push({ debugMsg: 'OK - Inserted example data to DB' });
     res.send(jsonResponse);
   } catch (err) {
-    console.log('ERROR from GET /initdb', err);
+    if (showConsoleLog) console.log('ERROR from GET /initdb', err);
     res.status(400).json({ errorMsg: err });
   }
 };
@@ -38,10 +41,10 @@ const getReservations = async (req, res) => {
         include: [Client, ServiceProvider],
       });
 
-      console.log('All reservations:', JSON.stringify(reservations, null, 2));
+      if (showConsoleLog) console.log('All reservations:', JSON.stringify(reservations, null, 2));
       res.status(200).json(reservations); // Content-Type: application/json;
     } catch (err) {
-      console.log('ERROR from GET /reservations', err);
+      if (showConsoleLog) console.log('ERROR from GET /reservations', err);
       res.status(400).json({ errorMsg: err });
     }
   } else {
@@ -84,10 +87,10 @@ const getReservations = async (req, res) => {
           where: whereQueryObject,
         });
 
-        console.log('Reservations:', JSON.stringify(reservations, null, 2));
+        if (showConsoleLog) console.log('Reservations:', JSON.stringify(reservations, null, 2));
         res.status(200).json(reservations); // Content-Type: application/json;
       } catch (err) {
-        console.log('ERROR from GET /reservations', err);
+        if (showConsoleLog) console.log('ERROR from GET /reservations', err);
         res.status(400).json({ errorMsg: err });
       }
     }
@@ -128,7 +131,7 @@ const postReservation = async (req, res) => {
 
         res.status(201).json({ debugMsg: 'INSERT success!' }); // 201 created
       } catch (err) {
-        console.log('ERROR from POST /reservation', err);
+        if (showConsoleLog) ('ERROR from POST /reservation', err);
         res.status(400).json({ debugMsg: 'Error from INSERT!' }); // 400 Bad request
       }
     } else {
@@ -158,7 +161,7 @@ const deleteReservation = async (req, res) => {
         res.status(404).json({ errorMsg: 'Nothing to DELETE!' }); // 404 Not Found
       }
     } catch (err) {
-      console.log('ERROR from DELETE /reservation', err);
+      if (showConsoleLog) console.log('ERROR from DELETE /reservation', err);
       res.status(400).json({ errorMsg: 'Error from DELETE!' });
     }
   } else {
@@ -212,7 +215,7 @@ const putReservation = async (req, res) => {
           res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
         }
       } catch (err) {
-        console.log('ERROR from PUT /reservation', err);
+        if (showConsoleLog) console.log('ERROR from PUT /reservation', err);
         res.status(400).json({ debugMsg: 'Error from PUT!' }); // 400 Bad request
       }
     } else {
@@ -278,7 +281,7 @@ const patchReservation = async (req, res) => {
               res.status(404).json({ debugMsg: 'NOK - Reservation not found' }); // 404 not found
             }
           } catch (err) {
-            console.log('ERROR from PATCH /reservation', err);
+            if (showConsoleLog) console.log('ERROR from PATCH /reservation', err);
             res.status(400).json({ debugMsg: 'Error from PATCH!' }); // 400 Bad request
           }
         } else {

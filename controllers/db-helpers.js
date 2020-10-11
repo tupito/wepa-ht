@@ -8,21 +8,24 @@ const ServiceProvider = require('../models/serviceprovider');
 const Reservation = require('../models/reservation');
 const User = require('../models/user');
 
+// custom config, show/hide console.logs
+const { showConsoleLog } = require('../config/custom');
+
 // Testing db connection
 async function testDBConnection() {
-  console.log('Testing DB connection..');
+  if (showConsoleLog) console.log('Testing DB connection..');
 
   try {
     await sequelize.authenticate();
-    console.log('DB connection ok.');
+    if (showConsoleLog) console.log('DB connection ok.');
   } catch (error) {
-    console.error('DB connection nok:', error);
+    if (showConsoleLog) console.error('DB connection nok:', error);
   }
 }
 
 // Model synchronization to db
 async function synchronizeDBModels() {
-  console.log('Syncing..');
+  if (showConsoleLog) console.log('Syncing..');
 
   try {
     // https://sequelize.org/master/manual/model-basics.html#model-synchronization
@@ -33,9 +36,9 @@ async function synchronizeDBModels() {
     Reservation.belongsTo(Client);
     ServiceProvider.hasMany(Reservation);
     Reservation.belongsTo(ServiceProvider);
-    console.log('All models were synchronized successfully.');
+    if (showConsoleLog) console.log('All models were synchronized successfully.');
   } catch (err) {
-    console.log('ERROR from synchronizeDBModels(): ', err);
+    if (showConsoleLog) console.log('ERROR from synchronizeDBModels(): ', err);
   }
 }
 
@@ -45,13 +48,13 @@ async function insertExampleData() {
   // Sequelize provides the create method, which combines
   // the build and save methods shown above into a single method.
   const client1 = await Client.create({ name: 'L. Palmer' });
-  console.log('Client', client1.name, 'inserted!');
+  if (showConsoleLog) console.log('Client', client1.name, 'inserted!');
 
   const client2 = await Client.create({ name: 'D. Cooper' });
-  console.log('Client', client2.name, 'inserted!');
+  if (showConsoleLog) console.log('Client', client2.name, 'inserted!');
 
   const serviceProvider = await ServiceProvider.create({ name: 'Dr. Jacoby' });
-  console.log('Service-Provider', serviceProvider.name, 'inserted!');
+  if (showConsoleLog) console.log('Service-Provider', serviceProvider.name, 'inserted!');
 
   await User.create({
     username: 'bob',
