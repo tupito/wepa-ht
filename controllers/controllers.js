@@ -61,7 +61,11 @@ const getReservations = async (req, res) => {
     } = req.query;
 
     // verify param names, if not valid -> return error message
-    let okToContinue = validationHelper.hasValidKeys(req.query, ['start', 'end', 'spid', 'cid']) ? true : res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+    let okToContinue = !!validationHelper.hasValidKeys(req.query, ['start', 'end', 'spid', 'cid']);
+
+    if (!okToContinue) {
+      res.status(400).json({ errorMsg: 'Unaccepted parameter used' });
+    }
 
     if (okToContinue) {
       // if searching with time, both "start" and "end" are needed
