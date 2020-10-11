@@ -24,6 +24,7 @@ const getInitDB = async (req, res) => {
     res.send(jsonResponse);
   } catch (err) {
     console.log('ERROR from GET /initdb', err);
+    res.status(400).json({ errorMsg: err });
   }
 };
 
@@ -41,7 +42,7 @@ const getReservations = async (req, res) => {
       res.status(200).json(reservations); // Content-Type: application/json;
     } catch (err) {
       console.log('ERROR from GET /reservations', err);
-      res.status(400).json({ debugMsg: err });
+      res.status(400).json({ errorMsg: err });
     }
   } else {
     // SEARCH QUERY
@@ -86,8 +87,8 @@ const getReservations = async (req, res) => {
         console.log('Reservations:', JSON.stringify(reservations, null, 2));
         res.status(200).json(reservations); // Content-Type: application/json;
       } catch (err) {
-        console.log('ERROR from GET /reservations2?search_criteria', err);
-        res.status(400).json({ debugMsg: err });
+        console.log('ERROR from GET /reservations', err);
+        res.status(400).json({ errorMsg: err });
       }
     }
   }
@@ -112,8 +113,7 @@ const postReservation = async (req, res) => {
 
   if (okToContinue) {
     // Check from the reservations if the client or the serviceprovider are booked
-    const check = await dbHelper.checkOverlappingReservations(req.body.clientid,
-      req.body.serviceproviderid, req.body.start, req.body.end, 0);
+    const check = await dbHelper.checkOverlappingReservations(req.body, 0);
 
     // Found any results?
     if (check.length === 0) {
@@ -136,14 +136,9 @@ const postReservation = async (req, res) => {
       res.status(400).json({ errorMsg: 'Client or serviceprovider are booked!' }); // 400 Bad request
     }
   }
-
-  // https://sequelize.org/master/manual/model-querying-basics.html#applying-where-clauses
-  // Check from the reservations if the client or the serviceprovider are booked
 };
 
 const deleteReservation = async (req, res) => {
-  console.log('DELETE /reservation wepa-ht');
-
   const idToDelete = req.params.id;
 
   // parameter type check
@@ -158,13 +153,13 @@ const deleteReservation = async (req, res) => {
       });
 
       if (del > 0) {
-        res.json({ debugMsg: 'DELETE success!' });
+        res.status(200).json({ debugMsg: 'DELETE success!' });
       } else {
         res.status(404).json({ errorMsg: 'Nothing to DELETE!' }); // 404 Not Found
       }
     } catch (err) {
       console.log('ERROR from DELETE /reservation', err);
-      res.json({ debugMsg: 'Error from DELETE!' });
+      res.status(400).json({ errorMsg: 'Error from DELETE!' });
     }
   } else {
     res.status(400).json({ errorMsg: `type of ${idToDelete} is not number` });
@@ -192,8 +187,7 @@ const putReservation = async (req, res) => {
 
   if (okToContinue) {
     // Check from the reservations if the client or the serviceprovider are booked
-    const check = await dbHelper.checkOverlappingReservations(req.body.clientid,
-      req.body.serviceproviderid, req.body.start, req.body.end, 0);
+    const check = await dbHelper.checkOverlappingReservations(req.body, 0);
 
     // Found any results?
     if (check.length === 0) {
@@ -259,8 +253,7 @@ const patchReservation = async (req, res) => {
 
       if (okToContinue) {
         // Check from the reservations if the client or the serviceprovider are booked
-        const check = await dbHelper.checkOverlappingReservations(reservation.clientid,
-          reservation.serviceproviderid, reservation.start, reservation.end, idToUpdate);
+        const check = await dbHelper.checkOverlappingReservations(reservation, idToUpdate);
 
         // Found any results?
         if (check.length === 0) {

@@ -22,18 +22,20 @@ async function testDBConnection() {
 // Model synchronization to db
 async function synchronizeDBModels() {
   console.log('Syncing..');
-  // https://sequelize.org/master/manual/model-basics.html#model-synchronization
-  await sequelize.sync({ force: true }) // Force droppaa tablet
-    .then(() => {
-      // Assosisaatiot
-      // https://sequelize.org/master/manual/assocs.html#implementation-3
-      Client.hasMany(Reservation);
-      Reservation.belongsTo(Client);
-      ServiceProvider.hasMany(Reservation);
-      Reservation.belongsTo(ServiceProvider);
-    })
-    .then(() => console.log('All models were synchronized successfully.'))
-    .catch((err) => console.log('ERROR from synchronizeDBModels(): ', err));
+
+  try {
+    // https://sequelize.org/master/manual/model-basics.html#model-synchronization
+    await sequelize.sync({ force: true }); // Force drops the tables
+    // Associations
+    // https://sequelize.org/master/manual/assocs.html#implementation-3
+    Client.hasMany(Reservation);
+    Reservation.belongsTo(Client);
+    ServiceProvider.hasMany(Reservation);
+    Reservation.belongsTo(ServiceProvider);
+    console.log('All models were synchronized successfully.');
+  } catch (err) {
+    console.log('ERROR from synchronizeDBModels(): ', err);
+  }
 }
 
 // Push example data to db
@@ -74,15 +76,15 @@ async function insertExampleData() {
 }
 
 // Check if the timeframe, client or servicdeprovider are free
-async function checkOverlappingReservations(cid, spid, startParam, endParam, rid) {
+async function checkOverlappingReservations(obj, rid) {
   const check = await Reservation.findAll({
     where:
       {
         [Op.and]: [
           {
             [Op.or]: [
-              { clientid: cid },
-              { serviceproviderid: spid },
+              { clientid: obj.clientid },
+              { serviceproviderid: obj.serviceproviderid },
             ],
           },
           {
@@ -94,22 +96,22 @@ async function checkOverlappingReservations(cid, spid, startParam, endParam, rid
             [Op.or]: [
               {
                 start: {
-                  [Op.between]: [startParam, endParam],
+                  [Op.between]: [obj.start, obj.end],
                 },
               },
               {
                 end: {
-                  [Op.between]: [startParam, endParam],
+                  [Op.between]: [obj.start, obj.end],
                 },
               },
               {
                 [Op.and]: [
                   {
                     start: {
-                      [Op.lte]: startParam,
+                      [Op.lte]: obj.start,
                     },
                     end: {
-                      [Op.gte]: endParam,
+                      [Op.gte]: obj.end,
                     },
                   },
                 ],
