@@ -1,9 +1,11 @@
 const { Op } = require('sequelize');
 
+const jwt = require('jsonwebtoken'); // jwt authorization
 // Sequelize models
 const Client = require('../models/client');
 const ServiceProvider = require('../models/serviceprovider');
 const Reservation = require('../models/reservation');
+const User = require('../models/user');
 
 // Database functions
 const dbHelper = require('./db-helpers');
@@ -13,6 +15,8 @@ const validationHelper = require('./validation-helpers');
 
 // custom config, show/hide console.logs
 const { showConsoleLog } = require('../config/custom');
+
+// jwt
 
 // OBS!!!: TODO: Will crash if runned twice in same session
 const getInitDB = async (req, res) => {
@@ -296,9 +300,40 @@ const patchReservation = async (req, res) => {
   }
 };
 
+// jwt: https://harshitpant.com/blog/using-json-web-token-for-authentication
+const login = async (req, res) => {
+  const { username, password } = req.body;
+  const foundUser = await User.findOne({
+    where: {
+      username, password,
+    },
+  });
+
+  if (foundUser !== null) {
+    // If all credentials are correct do this
+    const token = jwt.sign(
+      { id: foundUser.id, username: foundUser.username },
+      'never use this simple secret in real life',
+      { expiresIn: 129600 },
+    ); // Sigining the token
+    res.json({
+      success: true,
+      err: null,
+      token,
+    });
+  } else {
+    return res.status(401).json({
+      success: false,
+      token: null,
+      err: 'Username or password is incorrect',
+    });
+  }
+};
+
 module.exports.getInitDB = getInitDB;
 module.exports.getReservations = getReservations;
 module.exports.postReservation = postReservation;
 module.exports.deleteReservation = deleteReservation;
 module.exports.putReservation = putReservation;
 module.exports.patchReservation = patchReservation;
+module.exports.login = login;
