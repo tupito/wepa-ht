@@ -1,7 +1,7 @@
 # Ajo-ohje
 
 ```
-1. Asenna Docker, esim. Windows: Docker desktop (https://www.docker.com/products/docker-desktop)
+1. Asenna docker ja docker-compose, esim. Windows: Docker desktop (https://www.docker.com/products/docker-desktop)
 
 2. luo tietokanta (mariadb + adminer)
 docker-compose up -d 
@@ -21,6 +21,11 @@ Tietokantaa voi tarkastella selainpohjaisen adminerin kautta: localhost:8090
 user: root
 pwd: root
 ```
+
+# Ajo-ohje prosessi
+
+![Process image](https://raw.githubusercontent.com/tupito/wepa-ht/master/how-to-run-process.png)
+
 
 # Ajo-ohje (legacyä)
 
