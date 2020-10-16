@@ -14,8 +14,9 @@ npm test
 
 4b. Vaihtoehto #2: käynnistä sovellus ja tee api-pyynnöt esim. Postmanilla
 npm run start
-
-Kutsu ensin GET localhost:8000/initdb, muuten teet pyyntöjä tyhjää tietokantaa vasten eikä mikään voi toimia.
+* Kutsu ensin GET localhost:8000/initdb, muuten teet pyyntöjä tyhjää tietokantaa vasten eikä mikään voi toimia.
+* huom. POST /login (username:bob password: blackLodge), body pitää lähettää x-www-form-urlencoded-muodossa. 
+** onnistunut login palauttaa tokenin, jota käytetään muiden kutsujen Headerissa muodossa Authorization: "Bearer xxxxxx"
 
 Tietokantaa voi tarkastella selainpohjaisen adminerin kautta: localhost:8090
 user: root
@@ -26,26 +27,17 @@ pwd: root
 
 ![Process image](https://raw.githubusercontent.com/tupito/wepa-ht/master/how-to-run-process.png)
 
-
-# Ajo-ohje (legacyä)
-
+# Github-prosessi karkeasti
 ```
-# listaa käynnissä olevat kontit
-docker ps (sama kuin docker container ls)
-
-# sammuta docker containerit
-docker stop wepa-ht_adminer_1
-docker stop wepa-ht_db_1
-
-# noden käynnistys
-npm install
-npm run start
-npm run start-dev
-
-# todo: testit
-...
-
+Uudet ominaisuudet tehdään lokaalisti uuteen branchiin.
+Ennen branchin mergeämistä lokaaliin masteriin,
+ladataan viimeisin versio remote masterista (git fetch; git pull).
+Ratkaistaan mahdolliset konfliktit lokaalisti git merge:n jälkeen.
+Lopuksi uusi commit ja push remote masteriin.
 ```
+
+![Process image](https://raw.githubusercontent.com/tupito/wepa-ht/master/git-process.png)
+
 
 # Dev: Git-Cheatsheet
 
@@ -90,36 +82,9 @@ git reset --hard HEAD
 
 git log --oneline -n5
 ```
-# Github-prosessi karkeasti
-```
-Uudet ominaisuudet tehdään lokaalisti uuteen branchiin.
-Ennen branchin mergeämistä lokaaliin masteriin,
-ladataan viimeisin versio remote masterista (git fetch; git pull).
-Ratkaistaan mahdolliset konfliktit lokaalisti git merge:n jälkeen.
-Lopuksi uusi commit ja push remote masteriin.
-```
 
-![Process image](https://raw.githubusercontent.com/tupito/wepa-ht/master/git-process.png)
-
-
-# dev - npm packages
+# dev - ESLint init
 
 ```
-npm install nodemon --save-dev
-npm install express
-npm install sequelize
-npm install mariadb
-```
-
-# dev - ESLint
-
-```
-npm install eslint
 .\node_modules\.bin\eslint --init
-```
-
-# dev - vscode nodejs debugger
-
-```
-node --inspect .\app.js
 ```
